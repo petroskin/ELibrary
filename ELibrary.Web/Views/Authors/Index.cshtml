@@ -1,0 +1,31 @@
+﻿@model IEnumerable<ELibrary.Domain.Models.Author>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+}
+@foreach (Author author in Model)
+{
+    <div class="col">
+        <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src="@author.Image" />
+            <div class="card-body">
+                <h5 class="card-title">@author.FullName()</h5>
+                <a asp-action="Details" asp-route-id="@author.Id" class="btn btn-primary">Details</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Edit" asp-route-id="@author.Id" class="btn btn-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@author.Id" class="btn btn-danger">Delete</a>
+                }
+            </div>
+        </div>
+    </div>
+}

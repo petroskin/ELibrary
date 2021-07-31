@@ -1,4 +1,8 @@
-using ELibrary.Web.Data;
+using ELibrary.Domain.Identity;
+using ELibrary.Repository;
+using ELibrary.Repository.Implementation;
+using ELibrary.Repository.Interface;
+using ELibrary.Service.Interface;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -30,8 +34,21 @@ namespace ELibrary.Web
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            services.AddDefaultIdentity<ELibraryUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IAuthorRepository), typeof(AuthorRepository));
+            services.AddScoped(typeof(IBookRepository), typeof(BookRepository));
+            services.AddScoped(typeof(IRentRepository), typeof(RentRepository));
+            services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+
+            services.AddTransient<IAuthorService, Service.Implementation.AuthorService>();
+            services.AddTransient<IBookService, Service.Implementation.BookService>();
+            services.AddTransient<ICartService, Service.Implementation.CartService>();
+            services.AddTransient<IRentService, Service.Implementation.RentService>();
+            services.AddTransient<IUserService, Service.Implementation.UserService>();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
