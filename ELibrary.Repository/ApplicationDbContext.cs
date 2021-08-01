@@ -58,6 +58,11 @@ namespace ELibrary.Repository
                 .HasOne(i => i.Book)
                 .WithMany()
                 .HasForeignKey(i => i.BookId);
+
+            builder.Entity<Rent>()
+                .HasOne(i => i.User)
+                .WithMany(i => i.Rents)
+                .HasForeignKey(i => i.UserId);
         }
     }
 }

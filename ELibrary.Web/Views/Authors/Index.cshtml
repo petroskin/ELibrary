@@ -19,7 +19,7 @@
             <img class="card-img-top" src="@author.Image" />
             <div class="card-body">
                 <h5 class="card-title">@author.FullName()</h5>
-                <a asp-action="Details" asp-route-id="@author.Id" class="btn btn-primary">Details</a>
+                <a asp-action="Details" asp-route-id="@author.Id" class="btn btn-info">Details</a>
                 @if (User.IsInRole("Admin"))
                 {
                     <a asp-action="Edit" asp-route-id="@author.Id" class="btn btn-warning">Edit</a>

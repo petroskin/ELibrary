@@ -8,8 +8,10 @@ namespace ELibrary.Domain.Identity
 {
     public class ELibraryUser : IdentityUser
     {
+        public static int BooksAllowedForStandard = 3;
         public string Name { get; set; }
         public string Surname { get; set; }
         public virtual Cart UserCart { get; set; }
+        public IEnumerable<Rent> Rents { get; set; }
     }
 }

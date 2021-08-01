@@ -12,6 +12,7 @@ namespace ELibrary.Domain.DTO
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Role { get; set; }
+        public int BooksRented { get; set; }
         public ELibraryUserDto() { }
         public ELibraryUserDto(ELibraryUser user)
         {
