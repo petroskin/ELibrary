@@ -8,6 +8,7 @@ namespace ELibrary.Domain.Identity
 {
     public class ELibraryUser : IdentityUser
     {
+        // Roles: "Standard", "Premium", "Admin"
         public static int BooksAllowedForStandard = 3;
         public string Name { get; set; }
         public string Surname { get; set; }

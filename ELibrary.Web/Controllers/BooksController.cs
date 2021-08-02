@@ -30,7 +30,7 @@ namespace ELibrary.Web.Controllers
         }
 
         // GET: Books
-        public IActionResult Index()
+        public IActionResult Index(string category)
         {
             ViewData["BooksLeft"] = "";
             if (User.Identity.IsAuthenticated)
@@ -39,7 +39,17 @@ namespace ELibrary.Web.Controllers
                 booksLeft += CalculateBooksLeft(_userService.GetDto(User.FindFirstValue(ClaimTypes.NameIdentifier)));
                 ViewData["BooksLeft"] = booksLeft;
             }
-            return View(_bookService.GetAll());
+
+            IEnumerable<Book> books = _bookService.GetAll();
+            if (category != null || category != "")
+            {
+                books = books.Where(i => i.CategoriesInBook.Select(j => j.Category).Contains(category));
+            }
+            List<string> categories = Book.BookCategories.ToList();
+            categories.Add("");
+            ViewData["categories"] = new SelectList(categories);
+
+            return View(books);
         }
 
         // GET: Books/Details/5

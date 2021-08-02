@@ -22,6 +22,7 @@ namespace ELibrary.Web.Controllers
             _cartService = cartService;
             _userService = userService;
         }
+        // GET: Cart
         public IActionResult Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -33,12 +34,14 @@ namespace ELibrary.Web.Controllers
 
             return View(model);
         }
+        // GET: Cart/RemoveFromCart/5
         public IActionResult RemoveFromCart(Guid id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _cartService.RemoveFromCart(userId, id);
             return RedirectToAction(nameof(Index));
         }
+        // POST: Cart/RentNow
         [HttpPost]
         public IActionResult RentNow()
         {

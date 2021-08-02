@@ -139,10 +139,6 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
         {
             // create roles
 
-            var roleAdmin = new IdentityRole();
-            roleAdmin.Name = "Admin";
-            await _roleManager.CreateAsync(roleAdmin);
-
             var roleStandard = new IdentityRole();
             roleStandard.Name = "Standard";
             await _roleManager.CreateAsync(roleStandard);
@@ -150,6 +146,10 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
             var rolePremium = new IdentityRole();
             rolePremium.Name = "Premium";
             await _roleManager.CreateAsync(rolePremium);
+
+            var roleAdmin = new IdentityRole();
+            roleAdmin.Name = "Admin";
+            await _roleManager.CreateAsync(roleAdmin);
 
             // add admin user
 
