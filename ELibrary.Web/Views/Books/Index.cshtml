@@ -40,3 +40,21 @@
         </div>
     </div>
 }
+@if (User.IsInRole("Admin"))
+{
+    <form asp-action="Export" method="get">
+        <div class="form-group">
+            <label class="control-label">Category:</label>
+            <select id="category" name="category">
+                <option value="All" selected>All</option>
+                @foreach (string category in ELibrary.Domain.Models.Book.BookCategories)
+                {
+                    <option value="@category">@category</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Export books" class="btn btn-primary" />
+        </div>
+    </form>
+}

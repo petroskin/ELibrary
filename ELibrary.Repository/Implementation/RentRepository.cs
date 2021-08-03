@@ -44,10 +44,32 @@ namespace ELibrary.Repository.Implementation
                 .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook).SingleOrDefault(i => i.Id == id);
         }
 
+        public Rent Get(string userId, int year, int month)
+        {
+            if (!_entities.Any(i => i.UserId == userId && i.Month == DateTime.Now.Month && i.Year == DateTime.Now.Year))
+            {
+                Insert(new Rent
+                {
+                    Year = DateTime.Now.Year,
+                    Month = DateTime.Now.Month,
+                    UserId = userId
+                });
+            }
+            return _entities.Include(i => i.User).Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.Author)
+                .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook)
+                .SingleOrDefault(i => i.UserId == userId && i.Month == DateTime.Now.Month && i.Year == DateTime.Now.Year);
+        }
+
         public IEnumerable<Rent> GetAll()
         {
             return _entities.Include(i => i.User).Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.Author)
                 .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook).AsEnumerable();
+        }
+
+        public IEnumerable<Rent> GetAll(string userId)
+        {
+            return _entities.Include(i => i.User).Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.Author)
+                .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook).Where(i => i.UserId == userId).AsEnumerable();
         }
 
         public void Insert(Rent entity)

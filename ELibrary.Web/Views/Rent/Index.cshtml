@@ -1,0 +1,54 @@
+﻿@model ELibrary.Domain.Models.Rent
+@{
+    ViewData["Title"] = "Rented";
+}
+
+<h1>Rented - @Model.GetDateFormat()</h1>
+
+<div class="container">
+    @if (Model.BooksInRent.Count() == 0)
+    {
+        <h5>You haven't rented any books for this month.</h5>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        #
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Author
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                    <th>
+                        Categories
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    foreach (ELibrary.Domain.Models.Book item in Model.BooksInRent.Select(i => i.Book))
+                    {
+                        <tr>
+                            <td>@(i++)</td>
+                            <td><a asp-controller="Books" asp-action="Details" asp-route-id="@item.Id">@item.Name</a></td>
+                            <td><a asp-controller="Authors" asp-action="Details" asp-route-id="@item.AuthorId">@item.Author.FullName()</a></td>
+                            <td>@item.Description</td>
+                            <td>@item.CategoriesInBook.Select(i => i.Category).Aggregate((i, j) => i + ", " + j)</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    }
+    <a class="btn btn-primary" asp-action="Export" asp-route-id="@Model.Id">Export in PDF</a>
+    <a asp-action="AllRents">Back to rents</a>
+</div>

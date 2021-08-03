@@ -12,5 +12,10 @@ namespace ELibrary.Domain.Models
         public IEnumerable<BooksInRent> BooksInRent { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
+        public string GetDateFormat()
+        {
+            DateTime dateTime = new DateTime(Year, Month, 1);
+            return dateTime.ToString("MMMM yyyy");
+        }
     }
 }

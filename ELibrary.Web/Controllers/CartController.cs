@@ -17,10 +17,12 @@ namespace ELibrary.Web.Controllers
     {
         private readonly ICartService _cartService;
         private readonly IUserService _userService;
-        public CartController(ICartService cartService, IUserService userService)
+        private readonly IRentService _rentService;
+        public CartController(ICartService cartService, IUserService userService, IRentService rentService)
         {
             _cartService = cartService;
             _userService = userService;
+            _rentService = rentService;
         }
         // GET: Cart
         public IActionResult Index()
@@ -46,7 +48,33 @@ namespace ELibrary.Web.Controllers
         public IActionResult RentNow()
         {
             // NOT IMPLEMENTED
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Cart cart = _cartService.getCart(userId);
+            ELibraryUserDto userDto = _userService.GetDto(userId);
+            if (userDto.Role == "Standard" && userDto.BooksRented + cart.BooksInCart.Count() > ELibraryUser.BooksAllowedForStandard)
+            {
+                return RedirectToAction(nameof(RentDenied));
+            }
+
+            Rent rent = _rentService.Get(userId, DateTime.Now.Year, DateTime.Now.Month);
+            List<BooksInRent> booksInRent = rent.BooksInRent.ToList();
+            foreach (Book book in cart.BooksInCart.Select(i => i.Book))
+            {
+                booksInRent.Add(new BooksInRent
+                {
+                    Book = book,
+                    Rent = rent
+                });
+            }
+
+            _rentService.Update(rent);
             return RedirectToAction(nameof(Index));
+        }
+        // GET: Cart/RentDenied
+        public IActionResult RentDenied()
+        {
+            return View();
         }
         private string CalculateBooksLeft(ELibraryUserDto dto)
         {

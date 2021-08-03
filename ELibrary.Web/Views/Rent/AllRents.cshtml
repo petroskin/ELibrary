@@ -1,0 +1,37 @@
+﻿@model IEnumerable<ELibrary.Domain.Models.Rent> 
+@{
+    ViewData["Title"] = "All Rents";
+}
+
+<h1>Rented - All Months</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Month
+            </th>
+            <th>
+                Books Rented
+            </th>
+            <th>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GetDateFormat())
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BooksInRent.Count())
+                </td>
+                <td>
+                    <a class="btn btn-info" asp-action="Index" asp-route-id="@item.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
