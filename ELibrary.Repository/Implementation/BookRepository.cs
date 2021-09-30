@@ -64,6 +64,7 @@ namespace ELibrary.Repository.Implementation
             {
                 throw new ArgumentNullException("entity");
             }
+            _context.CategoriesInBooks.RemoveRange(_context.CategoriesInBooks.Where(i => i.BookId.Equals(entity.Id)));
             _entities.Update(entity);
             _context.SaveChanges();
         }

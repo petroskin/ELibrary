@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="2.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ELibrary.Domain\ELibrary.Domain.csproj" />
     <ProjectReference Include="..\ELibrary.Repository\ELibrary.Repository.csproj" />
   </ItemGroup>

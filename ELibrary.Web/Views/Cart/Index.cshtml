@@ -14,7 +14,14 @@
     {
         <div class="row">
             <form asp-controller="Cart" asp-action="RentNow" method="post">
-                <input type="submit" value="Rent Now!" class="btn btn-success" />
+                @if ((int)ViewData["BooksLeft"] != -1 && (int)ViewData["BooksLeft"] < Model.BooksInCart.Where(i => !ViewBag.BooksRented.Contains(i.Book)).Count())
+                {
+                    <input type="submit" value="Rent Now!" class="btn btn-success" disabled />
+                }
+                else
+                {
+                    <input type="submit" value="Rent Now!" class="btn btn-success" />
+                }
             </form>
         </div>
         <table class="table">
@@ -39,14 +46,33 @@
                     {
                         <tr>
                             <td>@(i++)</td>
-                            <td>@item.Book.Name</td>
+                            @if (ViewBag.BooksRented.Contains(item.Book))
+                            {
+                                <td>@item.Book.Name *</td>
+                            }
+                            else
+                            {
+                                <td>@item.Book.Name</td>
+                            }
                             <td>@item.Book.Author.FullName()</td>
-                            <td><a class="btn btn-danger" asp-action="RemoveFromCart" asp-route-id="@item.Id">Remove</a></td>
+                            <td>
+                                <form asp-action="RemoveFromCart" asp-route-id="@item.Id">
+                                    <input type="submit" value="Remove" class="btn btn-danger" />
+                                </form>
+                            </td>
                         </tr>
                     }
                 }
             </tbody>
         </table>
+        <p>* - You have already rented this book this month. It won't affect the number of books you can rent.</p>
     }
-    <h4>@ViewData["BooksLeft"]</h4>
+    @if (ViewBag.Status == "Standard")
+    { 
+        <h4>Number of books you can rent this month: @((int)ViewData["BooksLeft"] == -1 ? "unlimited" : ViewData["BooksLeft"]). <a asp-controller="User" asp-action="Status">Upgrade to premium to remove limit?</a></h4>
+    }
+    else
+    { 
+        <h4>Number of books you can rent this month: @((int)ViewData["BooksLeft"] == -1 ? "unlimited" : ViewData["BooksLeft"]).</h4>
+    }
 </div>

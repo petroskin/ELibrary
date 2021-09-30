@@ -35,19 +35,21 @@
             <img src="@Model.Image" style="max-width: 300px;"/>
         </dd>
     </dl>
-    @foreach (Book book in Model.Books)
-    {
-        <div class="col">
-            <div class="card" style="width: 18rem;">
-                <img class="card-img-top" src="@book.Image" />
-                <div class="card-body">
-                    <h5 class="card-title">@book.Name</h5>
-                    <p class="card-text">@book.Description</p>
-                    <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id" class="btn btn-info">Details</a>
+    <div class="row">
+        @foreach (Book book in Model.Books)
+        {
+            <div class="col">
+                <div class="card" style="width: 18rem;">
+                    <img class="card-img-top" src="@book.Image" />
+                    <div class="card-body">
+                        <h5 class="card-title">@book.Name</h5>
+                        <p class="card-text">@book.Description</p>
+                        <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id" class="btn btn-info">Details</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 </div>
 <div>
     @if (User.IsInRole("Admin"))

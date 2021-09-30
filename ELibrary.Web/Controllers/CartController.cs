@@ -30,9 +30,11 @@ namespace ELibrary.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Cart model = _cartService.getCart(userId);
 
-            string booksLeft = "Number of books you can rent this month: ";
-            booksLeft += CalculateBooksLeft(_userService.GetDto(userId));
+            int booksLeft = CalculateBooksLeft(_userService.GetDto(userId));
             ViewData["BooksLeft"] = booksLeft;
+            ViewData["Status"] = booksLeft == -1 ? "Premium" : "Standard";
+
+            ViewData["BooksRented"] = _rentService.Get(userId, DateTime.Now.Year, DateTime.Now.Month).BooksInRent.Select(i => i.Book).ToList();
 
             return View(model);
         }
@@ -47,44 +49,43 @@ namespace ELibrary.Web.Controllers
         [HttpPost]
         public IActionResult RentNow()
         {
-            // NOT IMPLEMENTED
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Cart cart = _cartService.getCart(userId);
-            ELibraryUserDto userDto = _userService.GetDto(userId);
-            if (userDto.Role == "Standard" && userDto.BooksRented + cart.BooksInCart.Count() > ELibraryUser.BooksAllowedForStandard)
-            {
-                return RedirectToAction(nameof(RentDenied));
-            }
-
             Rent rent = _rentService.Get(userId, DateTime.Now.Year, DateTime.Now.Month);
             List<BooksInRent> booksInRent = rent.BooksInRent.ToList();
-            foreach (Book book in cart.BooksInCart.Select(i => i.Book))
+
+            ELibraryUserDto userDto = _userService.GetDto(userId);
+            if (userDto.Role == "Standard" &&
+                userDto.BooksRented + cart.BooksInCart.Where(i => !booksInRent.Select(j => j.Book).Contains(i.Book)).Count() > ELibraryUser.BooksAllowedForStandard)
             {
-                booksInRent.Add(new BooksInRent
-                {
-                    Book = book,
-                    Rent = rent
-                });
+                return RedirectToAction(nameof(Index));
             }
 
+            foreach (Book book in cart.BooksInCart.Select(i => i.Book))
+            {
+                if (!booksInRent.Select(i => i.Book).Contains(book))
+                {
+                    booksInRent.Add(new BooksInRent
+                    {
+                        Book = book,
+                        Rent = rent
+                    });
+                }
+            }
+            rent.BooksInRent = booksInRent;
             _rentService.Update(rent);
+            _cartService.ClearCart(userId);
             return RedirectToAction(nameof(Index));
         }
-        // GET: Cart/RentDenied
-        public IActionResult RentDenied()
-        {
-            return View();
-        }
-        private string CalculateBooksLeft(ELibraryUserDto dto)
+        private int CalculateBooksLeft(ELibraryUserDto dto)
         {
             if (dto.Role == "Standard")
             {
-                return string.Format("%d", ELibraryUser.BooksAllowedForStandard - dto.BooksRented);
+                return ELibraryUser.BooksAllowedForStandard - dto.BooksRented;
             }
             else
             {
-                return "unlimited";
+                return -1;
             }
         }
     }

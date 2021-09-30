@@ -19,5 +19,6 @@ namespace ELibrary.Service.Interface
         void Update(ELibraryUser entity);
         void Delete(ELibraryUser entity);
         void InsertFromDtoAsync(IEnumerable<ExcelUserDataDto> entities);
+        void UpgradeStatus(string userId);
     }
 }

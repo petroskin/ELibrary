@@ -43,7 +43,7 @@ namespace ELibrary.Repository.Implementation
 
         public ELibraryUserDto GetDto(string id)
         {
-            ELibraryUser user = _entities.Include(i => i.Rents).SingleOrDefault(i => i.Id == id);
+            ELibraryUser user = _entities.Include(i => i.Rents).ThenInclude(i => i.BooksInRent).SingleOrDefault(i => i.Id == id);
             if (user == null)
             {
                 return null;
@@ -51,7 +51,10 @@ namespace ELibrary.Repository.Implementation
             ELibraryUserDto dto = new ELibraryUserDto(user);
 
             dto.Role = _context.Roles.Where(i => _context.UserRoles.Where(j => j.UserId == id && j.RoleId == i.Id).Any()).SingleOrDefault().Name;
-            dto.BooksRented = user.Rents.Count();
+            if (user.Rents.Where(i => i.Month == DateTime.Now.Month && i.Year == DateTime.Now.Year).Any())
+                dto.BooksRented = user.Rents.Where(i => i.Month == DateTime.Now.Month && i.Year == DateTime.Now.Year).First().BooksInRent.Count();
+            else
+                dto.BooksRented = 0;
 
             return dto;
         }

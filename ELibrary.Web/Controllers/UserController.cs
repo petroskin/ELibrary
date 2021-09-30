@@ -5,6 +5,7 @@ using ExcelDataReader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +15,6 @@ using System.Threading.Tasks;
 
 namespace ELibrary.Web.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
         private readonly IUserService _userService;
@@ -23,6 +23,7 @@ namespace ELibrary.Web.Controllers
             _userService = userService;
         }
         // GET: User
+        [Authorize(Roles = "Admin")]
         public IActionResult Index()
         {
             IEnumerable<ELibraryUser> users = _userService.GetAll();
@@ -30,6 +31,7 @@ namespace ELibrary.Web.Controllers
             return View(users);
         }
         // GET: User/Details/5
+        [Authorize(Roles = "Admin")]
         public IActionResult Details(string id)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -47,6 +49,7 @@ namespace ELibrary.Web.Controllers
             return View(model);
         }
         // POST: /User/Details/5
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Details([Bind("Id,Role")] ELibraryUserDto model)
         {
@@ -54,6 +57,7 @@ namespace ELibrary.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public IActionResult Import(IFormFile file)
         {
             //////////////////////////////////////////////////////////////////////////////
@@ -109,6 +113,43 @@ namespace ELibrary.Web.Controllers
             _userService.InsertFromDtoAsync(users);
 
             return RedirectToAction(nameof(Index));
+        }
+        //GET: /User/Status
+        [Authorize]
+        public IActionResult Status()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userDto = _userService.GetDto(userId);
+            ViewData["UserRole"] = userDto.Role;
+            return View();
+        }
+
+        public IActionResult UpgradeStatus(string stripeEmail, string stripeToken)
+        {
+            var customerService = new CustomerService();
+            var chargeService = new ChargeService();
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var customer = customerService.Create(new CustomerCreateOptions
+            {
+                Email = stripeEmail,
+                Source = stripeToken
+            });
+
+            var charge = chargeService.Create(new ChargeCreateOptions
+            {
+                Amount = (1000),
+                Description = "ELibrary Status Upgrade",
+                Currency = "usd",
+                Customer = customer.Id
+            });
+
+            if (charge.Status == "succeeded")
+            {
+                _userService.UpgradeStatus(userId);
+            }
+
+            return RedirectToAction("Status");
         }
     }
 }

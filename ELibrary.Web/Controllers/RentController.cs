@@ -1,6 +1,7 @@
 ﻿using ELibrary.Domain.Models;
 using ELibrary.Service.Interface;
 using GemBox.Document;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace ELibrary.Web.Controllers
 {
+    [Authorize]
     public class RentController : Controller
     {
         private readonly IRentService _rentService;
@@ -39,7 +41,7 @@ namespace ELibrary.Web.Controllers
         public IActionResult AllRents()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            IEnumerable<Rent> model = _rentService.GetAll(userId);
+            IEnumerable<Rent> model = _rentService.GetAll(userId).Where(i => i.BooksInRent.Count() > 0);
             return View(model);
         }
         // GET: Rent/Export/5

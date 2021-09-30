@@ -1,0 +1,31 @@
+﻿@using Microsoft.Extensions.Options
+@inject IOptions<ELibrary.Domain.StripeSettings> Stripe
+@{
+    ViewData["Title"] = "User Status";
+}
+
+<h1>User Status</h1>
+
+<div class="container">
+    @if (ViewBag.UserRole == "Standard")
+    {
+        <p class="h4">Your account status is <u>Standard</u>. Would you like to upgrade your account status to <u>Premium</u> to remove monthly book limit?</p>
+        <form asp-controller="User" asp-action="UpgradeStatus" method="post">
+            <article>
+                <script src="https://checkout.stripe.com/checkout.js"
+                        class="stripe-button"
+                        data-key="@Stripe.Value.PublishableKey"
+                        data-locale="auto"
+                        data-description="ELibrary Status Upgrade"
+                        data-amount="1000"
+                        data-label="Pay $10">
+                </script>
+            </article>
+        </form>
+    }
+    else
+    { 
+        <p class="h4">Your account status is <u>@ViewBag.UserRole</u>. Congratulations!</p>
+    }
+</div>
+

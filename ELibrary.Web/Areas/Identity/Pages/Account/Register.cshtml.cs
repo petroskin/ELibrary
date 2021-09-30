@@ -89,7 +89,7 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
             {
                 if (!await _roleManager.RoleExistsAsync("Admin"))
                 {
-                    createRoles();
+                    createRoles().Wait();
                 }
 
                 var user = new ELibraryUser { UserName = Input.Email,
@@ -103,7 +103,7 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-                    _userManager.AddToRoleAsync(user, "User").Wait();
+                    _userManager.AddToRoleAsync(user, "Standard").Wait();
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
@@ -135,7 +135,7 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private async void createRoles()
+        private async Task createRoles()
         {
             // create roles
 

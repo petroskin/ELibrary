@@ -23,6 +23,7 @@ namespace ELibrary.Repository
         public virtual DbSet<BooksInCart> BooksInCarts { get; set; }
         public virtual DbSet<Rent> Rents { get; set; }
         public virtual DbSet<BooksInRent> BooksInRents { get; set; }
+        public virtual DbSet<EmailMessage> EmailMessages { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)

@@ -23,10 +23,10 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.GetDateFormat())
+                    @item.GetDateFormat()
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.BooksInRent.Count())
+                    @item.BooksInRent.Count()
                 </td>
                 <td>
                     <a class="btn btn-info" asp-action="Index" asp-route-id="@item.Id">Details</a>

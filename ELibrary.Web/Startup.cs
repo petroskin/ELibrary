@@ -1,3 +1,4 @@
+using ELibrary.Domain;
 using ELibrary.Domain.Identity;
 using ELibrary.Repository;
 using ELibrary.Repository.Implementation;
@@ -12,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +23,12 @@ namespace ELibrary.Web
 {
     public class Startup
     {
+        private EmailSettings emailSettings;
         public Startup(IConfiguration configuration)
         {
+            emailSettings = new EmailSettings();
             Configuration = configuration;
+            Configuration.GetSection("EmailSettings").Bind(emailSettings);
         }
 
         public IConfiguration Configuration { get; }
@@ -43,6 +48,10 @@ namespace ELibrary.Web
             services.AddScoped(typeof(IRentRepository), typeof(RentRepository));
             services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
 
+            services.AddScoped<EmailSettings>(es => emailSettings);
+
+            services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));
+
             services.AddTransient<IAuthorService, Service.Implementation.AuthorService>();
             services.AddTransient<IBookService, Service.Implementation.BookService>();
             services.AddTransient<ICartService, Service.Implementation.CartService>();
@@ -56,6 +65,7 @@ namespace ELibrary.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            StripeConfiguration.ApiKey = Configuration.GetSection("Stripe")["SecretKey"];
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

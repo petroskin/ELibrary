@@ -43,12 +43,12 @@ namespace ELibrary.Web.Controllers
             }
 
             IEnumerable<Book> books = _bookService.GetAll();
-            if (category != null || category != "")
+            if (category != null && category != "All")
             {
                 books = books.Where(i => i.CategoriesInBook.Select(j => j.Category).Contains(category));
             }
-            List<string> categories = Book.BookCategories.ToList();
-            categories.Add("");
+            List<string> categories = new List<string> { "All" };
+            categories.AddRange(Book.BookCategories.ToList());
             ViewData["categories"] = new SelectList(categories);
 
             return View(books);
@@ -81,7 +81,16 @@ namespace ELibrary.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            ViewData["AuthorId"] = new SelectList(_authorService.GetAll(), "Id", "FullName()");
+            IEnumerable<Author> authors = _authorService.GetAll();
+            IEnumerable<SelectListItem> selectList =
+                from i in authors
+                select new SelectListItem
+                {
+                    Selected = false,
+                    Value = i.Id.ToString(),
+                    Text = i.FullName()
+                };
+            ViewData["AuthorId"] = selectList;
             return View();
         }
 
@@ -91,11 +100,18 @@ namespace ELibrary.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create([Bind("Name,Description,Image,AuthorId,Id")] Book book)
+        public IActionResult Create([Bind("Name,Description,Image,AuthorId,CategoriesInBook,Id")] Book book)
         {
             if (ModelState.IsValid)
             {
                 book.Id = Guid.NewGuid();
+                List<CategoriesInBook> list = book.CategoriesInBook.ToList();
+                foreach (string i in Request.Form["CategoriesInBook"])
+                {
+                    if (!list.Select(i => i.Category).Contains(i))
+                        list.Add(new CategoriesInBook(book, i));
+                }
+                book.CategoriesInBook = list;
                 _bookService.Insert(book);
                 return RedirectToAction(nameof(Index));
             }
@@ -117,7 +133,16 @@ namespace ELibrary.Web.Controllers
             {
                 return NotFound();
             }
-            ViewData["AuthorId"] = new SelectList(_authorService.GetAll(), "Id", "FullName()", book.AuthorId);
+            IEnumerable<Author> authors = _authorService.GetAll();
+            IEnumerable<SelectListItem> selectList =
+                from i in authors
+                select new SelectListItem
+                {
+                    Selected = (book.AuthorId == i.Id),
+                    Value = i.Id.ToString(),
+                    Text = i.FullName()
+                };
+            ViewData["AuthorId"] = selectList;
             return View(book);
         }
 
@@ -138,6 +163,18 @@ namespace ELibrary.Web.Controllers
             {
                 try
                 {
+                    List<CategoriesInBook> list = book.CategoriesInBook.ToList();
+                    foreach (string i in Request.Form["CategoriesInBook"])
+                    {
+                        if (!list.Select(i => i.Category).Contains(i))
+                            list.Add(new CategoriesInBook(book, i));
+                    }
+                    foreach (CategoriesInBook i in list)
+                    {
+                        if (!Request.Form["CategoriesInBook"].Contains(i.Category))
+                            list.Remove(i);
+                    }
+                    book.CategoriesInBook = list;
                     _bookService.Update(book);
                 }
                 catch (DbUpdateConcurrencyException)
@@ -244,7 +281,7 @@ namespace ELibrary.Web.Controllers
         {
             if (dto.Role == "Standard")
             {
-                return string.Format("%d", ELibraryUser.BooksAllowedForStandard - dto.BooksRented);
+                return string.Format("{0}", ELibraryUser.BooksAllowedForStandard - dto.BooksRented);
             }
             else
             {

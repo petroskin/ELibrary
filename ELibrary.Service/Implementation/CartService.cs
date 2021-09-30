@@ -22,18 +22,23 @@ namespace ELibrary.Service.Implementation
         {
             ELibraryUser user = _userRepository.GetWithCart(userId);
             Book book = _bookRepository.Get(bookId);
-            user.UserCart.BooksInCart.ToList().Add(new BooksInCart
+            List<BooksInCart> l = user.UserCart.BooksInCart.ToList();
+            if (!l.Select(i => i.Book).Contains(book))
+            l.Add(new BooksInCart
             {
                 Book = book,
                 Cart = user.UserCart
             });
+            user.UserCart.BooksInCart = l;
             _userRepository.Update(user);
         }
 
         public void ClearCart(string userId)
         {
             ELibraryUser user = _userRepository.GetWithCart(userId);
-            user.UserCart.BooksInCart.ToList().Clear();
+            List<BooksInCart> l = user.UserCart.BooksInCart.ToList();
+            l.Clear();
+            user.UserCart.BooksInCart = l;
             _userRepository.Update(user);
         }
 
@@ -46,7 +51,9 @@ namespace ELibrary.Service.Implementation
         public void RemoveFromCart(string userId, Guid Id)
         {
             ELibraryUser user = _userRepository.GetWithCart(userId);
-            user.UserCart.BooksInCart.ToList().RemoveAll(i => i.Id == Id);
+            List<BooksInCart> l = user.UserCart.BooksInCart.ToList();
+            l.RemoveAll(i => i.Id == Id);
+            user.UserCart.BooksInCart = l;
             _userRepository.Update(user);
         }
     }
