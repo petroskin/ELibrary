@@ -58,6 +58,8 @@ namespace ELibrary.Web
             services.AddTransient<IRentService, Service.Implementation.RentService>();
             services.AddTransient<IUserService, Service.Implementation.UserService>();
 
+            services.AddTransient<Service.RDF.Interface.IRDFService, Service.RDF.Implementation.RDFService>();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
