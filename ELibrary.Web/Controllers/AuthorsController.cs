@@ -9,16 +9,19 @@ using ELibrary.Domain.Models;
 using ELibrary.Repository;
 using Microsoft.AspNetCore.Authorization;
 using ELibrary.Service.Interface;
+using ELibrary.Service.RDF.Interface;
+using ELibrary.Service.RDF.Extension;
 
 namespace ELibrary.Web.Controllers
 {
     public class AuthorsController : Controller
     {
         private readonly IAuthorService _authorService;
-
-        public AuthorsController(ApplicationDbContext context, IAuthorService authorService)
+        private readonly IRDFService _rdfService;
+        public AuthorsController(ApplicationDbContext context, IAuthorService authorService, IRDFService rdfService)
         {
             _authorService = authorService;
+            _rdfService = rdfService;
         }
 
         // GET: Authors
@@ -41,7 +44,27 @@ namespace ELibrary.Web.Controllers
                 return NotFound();
             }
 
+            if (Request.Headers.ContainsKey("Accept"))
+            {
+                if (Request.Headers["Accept"] == "text/turtle")
+                {
+                    Response.Headers.Add("Content-Type", "text/turtle");
+                    return File(author.GetRDFGraph(Service.RDF.Enum.Syntax.Turtle), "text/turtle");
+                }
+                if (Request.Headers["Accept"] == "application/rdf+xml")
+                {
+                    Response.Headers.Add("Content-Type", "application/rdf+xml");
+                    return File(author.GetRDFGraph(Service.RDF.Enum.Syntax.RDFXML), "application/rdf+xml");
+                }
+            }
+
             return View(author);
+        }
+
+        // GET: Authors/MoreDetails/5
+        public IActionResult MoreDetails(Guid? id)
+        {
+            throw new NotImplementedException();
         }
 
         // GET: Authors/Create

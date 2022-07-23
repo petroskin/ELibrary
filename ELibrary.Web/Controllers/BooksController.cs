@@ -14,6 +14,8 @@ using System.Security.Claims;
 using ELibrary.Domain.Identity;
 using ClosedXML.Excel;
 using System.IO;
+using ELibrary.Service.RDF.Interface;
+using ELibrary.Service.RDF.Extension;
 
 namespace ELibrary.Web.Controllers
 {
@@ -23,12 +25,14 @@ namespace ELibrary.Web.Controllers
         private readonly IBookService _bookService;
         private readonly IUserService _userService;
         private readonly ICartService _cartService;
-        public BooksController(IAuthorService authorService, IBookService bookService, IUserService userService, ICartService cartService)
+        private readonly IRDFService _rdfService;
+        public BooksController(IAuthorService authorService, IBookService bookService, IUserService userService, ICartService cartService, IRDFService rdfService)
         {
             _authorService = authorService;
             _bookService = bookService;
             _userService = userService;
             _cartService = cartService;
+            _rdfService = rdfService;
         }
 
         // GET: Books
@@ -67,6 +71,21 @@ namespace ELibrary.Web.Controllers
             {
                 return NotFound();
             }
+
+            if (Request.Headers.ContainsKey("Accept"))
+            {
+                if (Request.Headers["Accept"] == "text/turtle")
+                {
+                    Response.Headers.Add("Content-Type", "text/turtle");
+                    return File(book.GetRDFGraph(Service.RDF.Enum.Syntax.Turtle), "text/turtle");
+                }
+                if (Request.Headers["Accept"] == "application/rdf+xml")
+                {
+                    Response.Headers.Add("Content-Type", "application/rdf+xml");
+                    return File(book.GetRDFGraph(Service.RDF.Enum.Syntax.RDFXML), "application/rdf+xml");
+                }
+            }
+
             ViewData["BooksLeft"] = "";
             if (User.Identity.IsAuthenticated)
             {
@@ -75,6 +94,12 @@ namespace ELibrary.Web.Controllers
                 ViewData["BooksLeft"] = booksLeft;
             }
             return View(book);
+        }
+
+        // GET: Books/MoreDetails/5
+        public IActionResult MoreDetails(Guid? id)
+        {
+            throw new NotImplementedException();
         }
 
         // GET: Books/Create
