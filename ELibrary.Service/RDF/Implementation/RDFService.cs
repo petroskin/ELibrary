@@ -16,13 +16,14 @@ namespace ELibrary.Service.RDF.Implementation
             _queryString = new SparqlParameterizedString();
 
             _queryString.Namespaces.AddNamespace("rdf", new Uri("http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+            _queryString.Namespaces.AddNamespace("rdfs", new Uri("http://www.w3.org/2000/01/rdf-schema#"));
             _queryString.Namespaces.AddNamespace("dbo", new Uri("http://dbpedia.org/ontology/"));
             _queryString.Namespaces.AddNamespace("dbp", new Uri("http://dbpedia.org/property/"));
 
             _queryString.QueryProcessor = new RemoteQueryProcessor(new SparqlRemoteEndpoint(new Uri("http://dbpedia.org/sparql"), "http://dbpedia.org"));
         }
 
-        public SparqlResultSet GetAuthorInfo(string name)
+        public List<SparqlResult> GetAuthorInfo(string name)
         {
             _queryString.CommandText = $"select * where " +
                 $"{{ " +
@@ -34,10 +35,12 @@ namespace ELibrary.Service.RDF.Implementation
 
             SparqlResultSet resultSet = _queryString.ExecuteQuery();
 
-            return resultSet;
+            List<SparqlResult> results = resultSet.Where(result => result.Value("name").ToString() == $"{name}@en").ToList();
+
+            return results;
         }
 
-        public SparqlResultSet GetBookInfo(string name)
+        public List<SparqlResult> GetBookInfo(string name)
         {
             _queryString.CommandText = $"select * where " +
                 $"{{ " +
@@ -49,7 +52,9 @@ namespace ELibrary.Service.RDF.Implementation
 
             SparqlResultSet resultSet = _queryString.ExecuteQuery();
 
-            return resultSet;
+            List<SparqlResult> results = resultSet.Where(result => result.Value("name").ToString() == $"{name}@en").ToList();
+
+            return results;
         }
     }
 }

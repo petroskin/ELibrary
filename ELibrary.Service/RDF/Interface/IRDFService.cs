@@ -7,7 +7,7 @@ namespace ELibrary.Service.RDF.Interface
 {
     public interface IRDFService
     {
-        SparqlResultSet GetBookInfo(string name);
-        SparqlResultSet GetAuthorInfo(string name);
+        List<SparqlResult> GetBookInfo(string name);
+        List<SparqlResult> GetAuthorInfo(string name);
     }
 }
