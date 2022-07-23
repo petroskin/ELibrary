@@ -20,17 +20,15 @@ namespace ELibrary.Service.RDF.Implementation
             _queryString.Namespaces.AddNamespace("dbp", new Uri("http://dbpedia.org/property/"));
 
             _queryString.QueryProcessor = new RemoteQueryProcessor(new SparqlRemoteEndpoint(new Uri("http://dbpedia.org/sparql"), "http://dbpedia.org"));
-
-            GetBookInfo("Eugene Onegin");
         }
 
         public SparqlResultSet GetAuthorInfo(string name)
         {
             _queryString.CommandText = $"select * where " +
                 $"{{ " +
-                $"?book rdf:type dbo:Writer . " +
-                $"?book rdfs:label ?name . " +
-                $"?book ?rel ?obj . " +
+                $"?author rdf:type dbo:Writer . " +
+                $"?author rdfs:label ?name . " +
+                $"?author ?rel ?obj . " +
                 $"FILTER (REGEX(?name,\"{name}\")) " +
                 $"}}";
 
