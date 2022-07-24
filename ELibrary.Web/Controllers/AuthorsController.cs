@@ -102,8 +102,6 @@ namespace ELibrary.Web.Controllers
                 props[key].Add(i.Value("obj"));
             }
 
-            // TODO: create view
-            throw new NotImplementedException();
             ViewData["subject"] = subject;
             ViewData["authorId"] = author.Id;
             return View(props);

@@ -1,0 +1,37 @@
+﻿@model IDictionary<string, List<VDS.RDF.INode>>
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>More Details - From DBPedia</h1>
+
+<div>
+    <h4><a href="@ViewData["subject"]">@ViewData["subject"]</a></h4>
+    <hr />
+    <dl class="row">
+        @foreach (string key in Model.Keys)
+        {
+            <dt class="col-sm-2 my-2">
+                <a href="@key">@key</a>
+            </dt>
+            <dd class="col-sm-10 my-2">
+                @foreach (var node in Model[key])
+                {
+                    if (node.NodeType == VDS.RDF.NodeType.Uri)
+                    {
+                        <a href="@node.ToString()">@node.ToString()</a>
+                    }
+                    else
+                    {
+                        <span>@node.ToString()</span>
+                    }
+                    <br />
+                }
+            </dd>
+        }
+    </dl>
+</div>
+<div>
+    <a asp-action="Details" asp-route-id="@ViewData["authorId"]">Back to Regular Details</a>
+</div>
