@@ -99,7 +99,49 @@ namespace ELibrary.Web.Controllers
         // GET: Books/MoreDetails/5
         public IActionResult MoreDetails(Guid? id)
         {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var book = _bookService.Get(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            var info = _rdfService.GetBookInfo(book.Name);
+
+            if (Request.Headers.ContainsKey("Accept"))
+            {
+                if (Request.Headers["Accept"] == "text/turtle")
+                {
+                    Response.Headers.Add("Content-Type", "text/turtle");
+                    return File(info.AsGraph(book, Service.RDF.Enum.Syntax.Turtle), "text/turtle");
+                }
+                if (Request.Headers["Accept"] == "application/rdf+xml")
+                {
+                    Response.Headers.Add("Content-Type", "application/rdf+xml");
+                    return File(info.AsGraph(book, Service.RDF.Enum.Syntax.RDFXML), "application/rdf+xml");
+                }
+            }
+
+            string subject = info[0].Value("book").ToString();
+
+            IDictionary<string, List<VDS.RDF.INode>> props = new Dictionary<string, List<VDS.RDF.INode>>();
+            foreach (var i in info)
+            {
+                string key = i.Value("rel").ToString();
+                if (!props.ContainsKey(key))
+                    props.Add(new KeyValuePair<string, List<VDS.RDF.INode>>(key, new List<VDS.RDF.INode>()));
+                props[key].Add(i.Value("obj"));
+            }
+
+            // TODO: create view
             throw new NotImplementedException();
+            ViewData["subject"] = subject;
+            ViewData["bookId"] = book.Id;
+            return View(props);
         }
 
         // GET: Books/Create

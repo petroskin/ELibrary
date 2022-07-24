@@ -37,6 +37,11 @@ namespace ELibrary.Service.RDF.Implementation
 
             List<SparqlResult> results = resultSet.Where(result => result.Value("name").ToString() == $"{name}@en").ToList();
 
+            if (results.Count == 0)
+            {
+                throw new Exception();
+            }
+
             return results;
         }
 
@@ -54,15 +59,12 @@ namespace ELibrary.Service.RDF.Implementation
 
             List<SparqlResult> results = resultSet.Where(result => result.Value("name").ToString() == $"{name}@en").ToList();
 
+            if (results.Count == 0)
+            {
+                throw new Exception();
+            }
+
             return results;
         }
     }
 }
-
-/* 
- * 
- * book attributes: dbo:WrittenWork, dbo:abstract, dbp:genre, dbp:language, dbp:releaseDate, dbp:titleOrig, 
- * 
- * writer attributes: dbo:Writer, rdfs:label
- * 
- */
