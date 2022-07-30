@@ -43,8 +43,12 @@ namespace ELibrary.Web
                 .AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped(typeof(IPublisherRepository), typeof(PublisherRepository));
+            services.AddScoped(typeof(ICategoryRepository), typeof(CategoryRepository));
             services.AddScoped(typeof(IAuthorRepository), typeof(AuthorRepository));
             services.AddScoped(typeof(IBookRepository), typeof(BookRepository));
+            services.AddScoped(typeof(IBookAuthorRepository), typeof(BookAuthorRepository));
+            services.AddScoped(typeof(IBookCategoriesRepository), typeof(BookCategoriesRepository));
             services.AddScoped(typeof(IRentRepository), typeof(RentRepository));
             services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
 

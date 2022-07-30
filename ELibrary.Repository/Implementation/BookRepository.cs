@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Repository.Implementation
 {
@@ -12,61 +13,72 @@ namespace ELibrary.Repository.Implementation
     {
         private readonly ApplicationDbContext _context;
         private DbSet<Book> _entities;
-        string errorMessage = string.Empty;
 
         public BookRepository(ApplicationDbContext context)
         {
             _context = context;
-            _entities = context.Set<Book>();
+            _entities = context.Book;
         }
-        public void Delete(Book entity)
+        public async Task Delete(Book entity)
         {
-            if (entity == null)
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM book WHERE id = {entity.Id}");
+            if (affectedCount == 0)
             {
-                throw new ArgumentNullException("entity");
-            }
-            _entities.Remove(entity);
-            _context.SaveChanges();
-        }
-
-        public void Delete(Guid? id)
-        {
-            Book entity = Get(id);
-            if (entity != null)
-            {
-                Delete(entity);
+                throw new Exception("Entity not found.");
             }
         }
 
-        public Book Get(Guid? id)
+        public async Task Delete(int id)
         {
-            return _entities.Include(i => i.Author).Include(i => i.CategoriesInBook).SingleOrDefault(i => i.Id == id);
-        }
-
-        public IEnumerable<Book> GetAll()
-        {
-            return _entities.Include(i => i.Author).Include(i => i.CategoriesInBook).AsEnumerable();
-        }
-
-        public void Insert(Book entity)
-        {
-            if (entity == null)
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM book WHERE id = {id}");
+            if (affectedCount == 0)
             {
-                throw new ArgumentNullException("entity");
+                throw new Exception("Entity not found.");
             }
-            _entities.Add(entity);
-            _context.SaveChanges();
         }
 
-        public void Update(Book entity)
+        public async Task<Book> Get(int id)
         {
-            if (entity == null)
+            Book b = await _entities.FromSqlInterpolated($"SELECT * FROM book b WHERE b.id = {id}").FirstOrDefaultAsync();
+            if (b == null)
             {
-                throw new ArgumentNullException("entity");
+                throw new Exception("Entity not found.");
             }
-            _context.CategoriesInBooks.RemoveRange(_context.CategoriesInBooks.Where(i => i.BookId.Equals(entity.Id)));
-            _entities.Update(entity);
-            _context.SaveChanges();
+            return b;
+        }
+
+        public async Task<IEnumerable<Book>> GetAll()
+        {
+            List<Book> b = await _entities.FromSqlInterpolated($"SELECT * FROM book b").ToListAsync();
+            return b;
+        }
+
+        public async Task<Book> GetWithAuthorsCategoriesPublisher(int id)
+        {
+            Book b = await _entities.FromSqlInterpolated($"SELECT * FROM book b WHERE b.id = {id}")
+                .Include(b => b.Publisher)
+                .Include(b => b.Categories).ThenInclude(bc => bc.Category)
+                .Include(b => b.Authors).ThenInclude(ba => ba.Author)
+                .FirstOrDefaultAsync();
+            if (b == null)
+            {
+                throw new Exception("Entity not found.");
+            }
+            return b;
+        }
+
+        public async Task Insert(Book entity)
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO book (\"name\", description, imagelink, publisherid) VALUES ('{entity.Name}', '{entity.Description}', '{entity.ImageLink}', '{entity.PublisherId}')");
+        }
+
+        public async Task Update(Book entity)
+        {
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"UPDATE book SET \"name\" = '{entity.Name}', description = '{entity.Description}', imagelink = '{entity.ImageLink}', publisherid = '{entity.PublisherId}' WHERE id = {entity.Id}");
+            if (affectedCount == 0)
+            {
+                throw new Exception("Entity not found.");
+            }
         }
     }
 }

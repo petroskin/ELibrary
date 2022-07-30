@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ELibrary.Repository.Interface
 {
-    public interface IBookRepository : IRepository<Book>
+    public interface IBookCategoriesRepository : IRepository<CategoriesInBook>
     {
-        Task<Book> GetWithAuthorsCategoriesPublisher(int id);
     }
 }

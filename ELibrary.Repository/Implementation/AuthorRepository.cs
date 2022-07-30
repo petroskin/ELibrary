@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Repository.Implementation
 {
@@ -12,60 +13,68 @@ namespace ELibrary.Repository.Implementation
     {
         private readonly ApplicationDbContext _context;
         private DbSet<Author> _entities;
-        string errorMessage = string.Empty;
 
         public AuthorRepository(ApplicationDbContext context)
         {
             _context = context;
-            _entities = context.Set<Author>();
+            _entities = context.Author;
         }
-        public void Delete(Author entity)
+        public async Task Delete(Author entity)
         {
-            if (entity == null)
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM author WHERE id = {entity.Id}");
+            if (affectedCount == 0)
             {
-                throw new ArgumentNullException("entity");
-            }
-            _entities.Remove(entity);
-            _context.SaveChanges();
-        }
-
-        public void Delete(Guid? id)
-        {
-            Author entity = Get(id);
-            if (entity != null)
-            {
-                Delete(entity);
+                throw new Exception("Entity not found.");
             }
         }
 
-        public Author Get(Guid? id)
+        public async Task Delete(int id)
         {
-            return _entities.Include(i => i.Books).SingleOrDefault(i => i.Id == id);
-        }
-
-        public IEnumerable<Author> GetAll()
-        {
-            return _entities.Include(i => i.Books).AsEnumerable();
-        }
-
-        public void Insert(Author entity)
-        {
-            if (entity == null)
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM author WHERE id = {id}");
+            if (affectedCount == 0)
             {
-                throw new ArgumentNullException("entity");
+                throw new Exception("Entity not found.");
             }
-            _entities.Add(entity);
-            _context.SaveChanges();
         }
 
-        public void Update(Author entity)
+        public async Task<Author> Get(int id)
         {
-            if (entity == null)
+            Author a = await _entities.FromSqlInterpolated($"SELECT * FROM author a WHERE a.id = {id}").FirstOrDefaultAsync();
+            if (a == null)
             {
-                throw new ArgumentNullException("entity");
+                throw new Exception("Entity not found.");
             }
-            _entities.Update(entity);
-            _context.SaveChanges();
+            return a;
+        }
+
+        public async Task<IEnumerable<Author>> GetAll()
+        {
+            List<Author> a = await _entities.FromSqlInterpolated($"SELECT * FROM author a").ToListAsync();
+            return a;
+        }
+
+        public async Task<Author> GetWithBooks(int id)
+        {
+            Author a = await _entities.FromSqlInterpolated($"SELECT * FROM author a WHERE a.id = {id}").Include(a => a.Books).ThenInclude(ba => ba.Book).FirstOrDefaultAsync();
+            if (a == null)
+            {
+                throw new Exception("Entity not found.");
+            }
+            return a;
+        }
+
+        public async Task Insert(Author entity)
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO author (\"name\", surname, country, imagelink) VALUES ('{entity.Name}', '{entity.Surname}', '{entity.Country}', '{entity.ImageLink}')");
+        }
+
+        public async Task Update(Author entity)
+        {
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"UPDATE author SET \"name\" = '{entity.Name}', surname = '{entity.Surname}', country = '{entity.Country}', imagelink = '{entity.ImageLink}' WHERE id = {entity.Id}");
+            if (affectedCount == 0)
+            {
+                throw new Exception("Entity not found.");
+            }
         }
     }
 }

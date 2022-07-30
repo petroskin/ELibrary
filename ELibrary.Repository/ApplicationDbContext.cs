@@ -15,9 +15,12 @@ namespace ELibrary.Repository
         {
         }
 
-        public virtual DbSet<Author> Authors { get; set; }
-        public virtual DbSet<CategoriesInBook> CategoriesInBooks { get; set; }
-        public virtual DbSet<Book> Books { get; set; }
+        public virtual DbSet<Publisher> Publisher { get; set; }
+        public virtual DbSet<BookAuthor> BookAuthors { get; set; }
+        public virtual DbSet<Author> Author { get; set; }
+        public virtual DbSet<Category> Category { get; set; }
+        public virtual DbSet<CategoriesInBook> BookCategories { get; set; }
+        public virtual DbSet<Book> Book { get; set; }
         public virtual DbSet<ELibraryUser> ELibraryUsers { get; set; }
         public virtual DbSet<Cart> Carts { get; set; }
         public virtual DbSet<BooksInCart> BooksInCarts { get; set; }
@@ -31,15 +34,34 @@ namespace ELibrary.Repository
             builder.HasDefaultSchema("elibrary");
             base.OnModelCreating(builder);
 
+            // new
+
             builder.Entity<Book>()
-                .HasOne(i => i.Author)
-                .WithMany(i => i.Books)
-                .HasForeignKey(i => i.AuthorId);
+                .HasOne(b => b.Publisher)
+                .WithMany(p => p.Books)
+                .HasForeignKey(b => b.PublisherId);
+
+            builder.Entity<BookAuthor>()
+                .HasOne(ba => ba.Author)
+                .WithMany(a => a.Books)
+                .HasForeignKey(ba => ba.AuthorId);
+
+            builder.Entity<BookAuthor>()
+                .HasOne(ba => ba.Book)
+                .WithMany(b => b.Authors)
+                .HasForeignKey(ba => ba.BookId);
 
             builder.Entity<CategoriesInBook>()
-                .HasOne(i => i.Book)
-                .WithMany(i => i.CategoriesInBook)
-                .HasForeignKey(i => i.BookId);
+                .HasOne(cb => cb.Category)
+                .WithMany(c => c.Books)
+                .HasForeignKey(cb => cb.CategoryId);
+
+            builder.Entity<CategoriesInBook>()
+                .HasOne(cb => cb.Book)
+                .WithMany(b => b.Categories)
+                .HasForeignKey(cb => cb.BookId);
+
+            // previous
 
             builder.Entity<BooksInCart>()
                 .HasOne(i => i.Cart)

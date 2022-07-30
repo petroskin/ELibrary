@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Repository.Implementation
 {
@@ -12,60 +13,59 @@ namespace ELibrary.Repository.Implementation
     {
         private readonly ApplicationDbContext _context;
         private DbSet<T> _entities;
-        string errorMessage = string.Empty;
 
         public Repository(ApplicationDbContext context)
         {
             _context = context;
             _entities = context.Set<T>();
         }
-        public void Delete(T entity)
+        public async Task Delete(T entity)
         {
             if (entity == null)
             {
                 throw new ArgumentNullException("entity");
             }
             _entities.Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(Guid? id)
+        public async Task Delete(int id)
         {
-            T entity = Get(id);
+            T entity = await Get(id);
             if (entity != null)
             {
-                Delete(entity);
+                await Delete(entity);
             }
         }
 
-        public T Get(Guid? id)
+        public async Task<T> Get(int id)
         {
-            return _entities.SingleOrDefault(i => i.Id == id);
+            return await _entities.SingleOrDefaultAsync(i => i.Id == id);
         }
 
-        public IEnumerable<T> GetAll()
+        public async Task<IEnumerable<T>> GetAll()
         {
-            return _entities.AsEnumerable();
+            return await _entities.ToArrayAsync();
         }
 
-        public void Insert(T entity)
+        public async Task Insert(T entity)
         {
             if (entity == null)
             {
                 throw new ArgumentNullException("entity");
             }
             _entities.Add(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(T entity)
+        public async Task Update(T entity)
         {
             if (entity == null)
             {
                 throw new ArgumentNullException("entity");
             }
             _entities.Update(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

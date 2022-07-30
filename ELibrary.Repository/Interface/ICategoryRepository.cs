@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ELibrary.Repository.Interface
 {
-    public interface IBookRepository : IRepository<Book>
+    public interface ICategoryRepository : IRepository<Category>
     {
-        Task<Book> GetWithAuthorsCategoriesPublisher(int id);
+        Task<Category> GetWithBooks(int id);
     }
 }
