@@ -28,6 +28,7 @@ namespace ELibrary.Repository
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.HasDefaultSchema("elibrary");
             base.OnModelCreating(builder);
 
             builder.Entity<Book>()
