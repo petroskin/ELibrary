@@ -9,30 +9,42 @@ namespace ELibrary.Domain.Models
         public static IEnumerable<string> BookCategories = new List<string> { "Adventure", "Classic", "Novel", "Drama", "Fantasy", "Humor", "Mythology", "Romance", "Sci-Fi" };
         public string Name { get; set; }
         public string Description { get; set; }
-        public string Image { get; set; }
-        public Guid AuthorId { get; set; }
-        public Author Author { get; set; }
-        public IEnumerable<CategoriesInBook> CategoriesInBook { get; set; }
+        public string ImageLink { get; set; }
+        public IEnumerable<BookAuthor> Authors { get; set; }
+        public IEnumerable<CategoriesInBook> Categories { get; set; }
+        public int PublisherId { get; set; }
+        public Publisher Publisher { get; set; }
+        public int TotalRents { get; set; }
+        public decimal AvgRating { get; set; }
         public Book()
         {
-            CategoriesInBook = new List<CategoriesInBook>();
+            Categories = new List<CategoriesInBook>();
+            Authors = new List<BookAuthor>();
+            TotalRents = 0;
+            AvgRating = 0;
         }
-        public Book(string name, string description, string image, Author author, IEnumerable<CategoriesInBook> categoriesInBooks)
+        public Book(string name, string description, string imageLink, int publisherId)
         {
             Name = name;
             Description = description;
-            Image = image;
-            Author = author;
-            AuthorId = author.Id;
-            CategoriesInBook = categoriesInBooks;
+            ImageLink = imageLink;
+            Categories = new List<CategoriesInBook>();
+            Authors = new List<BookAuthor>();
+            PublisherId = publisherId;
+            TotalRents = 0;
+            AvgRating = 0;
         }
-        public Book(string name, string description, string image, Guid authorId, IEnumerable<CategoriesInBook> categoriesInBooks)
+        public Book(string name, string description, string imageLink, Publisher publisher)
         {
             Name = name;
             Description = description;
-            Image = image;
-            AuthorId = authorId;
-            CategoriesInBook = categoriesInBooks;
+            ImageLink = imageLink;
+            Categories = new List<CategoriesInBook>();
+            Authors = new List<BookAuthor>();
+            Publisher = publisher;
+            PublisherId = publisher.Id;
+            TotalRents = 0;
+            AvgRating = 0;
         }
     }
 }

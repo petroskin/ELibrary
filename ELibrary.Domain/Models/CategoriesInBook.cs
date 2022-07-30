@@ -6,20 +6,22 @@ namespace ELibrary.Domain.Models
 {
     public class CategoriesInBook : BaseEntity
     {
-        public Guid BookId { get; set; }
+        public int BookId { get; set; }
         public Book Book { get; set; }
-        public string Category { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
         public CategoriesInBook() { }
-        public CategoriesInBook(Book book, string category)
+        public CategoriesInBook(int bookId, int categoryId)
+        {
+            BookId = bookId;
+            CategoryId = categoryId;
+        }
+        public CategoriesInBook(Book book, Category category)
         {
             Book = book;
             BookId = book.Id;
             Category = category;
-        }
-        public CategoriesInBook(Guid bookId, string category)
-        {
-            BookId = bookId;
-            Category = category;
+            CategoryId = category.Id;
         }
     }
 }
