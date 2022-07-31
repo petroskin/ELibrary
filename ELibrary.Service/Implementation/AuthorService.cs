@@ -13,7 +13,7 @@ namespace ELibrary.Service.Implementation
         private readonly IAuthorRepository _authorRepository;
         public AuthorService(IAuthorRepository authorRepository)
         {
-            await _authorRepository = authorRepository;
+            _authorRepository = authorRepository;
         }
         public async Task Delete(Author entity)
         {
