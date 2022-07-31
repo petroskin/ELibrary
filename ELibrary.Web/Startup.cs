@@ -57,6 +57,8 @@ namespace ELibrary.Web
             services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));
 
             services.AddTransient<IAuthorService, Service.Implementation.AuthorService>();
+            services.AddTransient<IPublisherService, Service.Implementation.PublisherService>();
+            services.AddTransient<ICategoryService, Service.Implementation.CategoryService>();
             services.AddTransient<IBookService, Service.Implementation.BookService>();
             services.AddTransient<ICartService, Service.Implementation.CartService>();
             services.AddTransient<IRentService, Service.Implementation.RentService>();

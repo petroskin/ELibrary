@@ -4,6 +4,7 @@ using ELibrary.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Service.Implementation
 {
@@ -12,36 +13,41 @@ namespace ELibrary.Service.Implementation
         private readonly IAuthorRepository _authorRepository;
         public AuthorService(IAuthorRepository authorRepository)
         {
-            _authorRepository = authorRepository;
+            await _authorRepository = authorRepository;
         }
-        public void Delete(Author entity)
+        public async Task Delete(Author entity)
         {
-            _authorRepository.Delete(entity);
-        }
-
-        public void Delete(Guid? id)
-        {
-            _authorRepository.Delete(id);
+            await _authorRepository.Delete(entity);
         }
 
-        public Author Get(Guid? id)
+        public async Task Delete(int id)
         {
-            return _authorRepository.Get(id);
+            await _authorRepository.Delete(id);
         }
 
-        public IEnumerable<Author> GetAll()
+        public async Task<Author> Get(int id)
         {
-            return _authorRepository.GetAll();
+            return await _authorRepository.Get(id);
         }
 
-        public void Insert(Author entity)
+        public async Task<IEnumerable<Author>> GetAll()
         {
-            _authorRepository.Insert(entity);
+            return await _authorRepository.GetAll();
         }
 
-        public void Update(Author entity)
+        public async Task<Author> GetWithBooks(int id)
         {
-            _authorRepository.Update(entity);
+            return await _authorRepository.GetWithBooks(id);
+        }
+
+        public async Task Insert(Author entity)
+        {
+            await _authorRepository.Insert(entity);
+        }
+
+        public async Task Update(Author entity)
+        {
+            await _authorRepository.Update(entity);
         }
     }
 }

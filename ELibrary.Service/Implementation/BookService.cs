@@ -4,44 +4,87 @@ using ELibrary.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Service.Implementation
 {
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
-        public BookService(IBookRepository bookRepository)
+        private readonly IBookCategoriesRepository _bookCategoriesRepository;
+        private readonly IBookAuthorRepository _bookAuthorRepository;
+        public BookService(IBookRepository bookRepository, IBookCategoriesRepository bookCategoriesRepository, IBookAuthorRepository bookAuthorRepository)
         {
             _bookRepository = bookRepository;
-        }
-        public void Delete(Book entity)
-        {
-            _bookRepository.Delete(entity);
+            _bookCategoriesRepository = bookCategoriesRepository;
+            _bookAuthorRepository = bookAuthorRepository;
         }
 
-        public void Delete(Guid? id)
+        public async Task AddAuthors(Book book, IEnumerable<Author> authors)
         {
-            _bookRepository.Delete(id);
+            foreach(Author author in authors)
+            {
+                await _bookAuthorRepository.Insert(new BookAuthor(author, book));
+            }
         }
 
-        public Book Get(Guid? id)
+        public async Task AddCategories(Book book, IEnumerable<Category> categories)
         {
-            return _bookRepository.Get(id);
+            foreach (Category category in categories)
+            {
+                await _bookCategoriesRepository.Insert(new CategoriesInBook(book, category));
+            }
         }
 
-        public IEnumerable<Book> GetAll()
+        public async Task Delete(Book entity)
         {
-            return _bookRepository.GetAll();
+            await _bookRepository.Delete(entity);
         }
 
-        public void Insert(Book entity)
+        public async Task Delete(int id)
         {
-            _bookRepository.Insert(entity);
+            await _bookRepository.Delete(id);
         }
 
-        public void Update(Book entity)
+        public async Task<Book> Get(int id)
         {
-            _bookRepository.Update(entity);
+            return await _bookRepository.Get(id);
+        }
+
+        public async Task<IEnumerable<Book>> GetAll()
+        {
+            return await _bookRepository.GetAll();
+        }
+
+        public async Task<Book> GetWithAuthorsCategoriesPublisher(int id)
+        {
+            return await _bookRepository.GetWithAuthorsCategoriesPublisher(id);
+        }
+
+        public async Task Insert(Book entity)
+        {
+            await _bookRepository.Insert(entity);
+        }
+
+        public async Task RemoveAuthors(IEnumerable<BookAuthor> authors)
+        {
+            foreach (BookAuthor author in authors)
+            {
+                await _bookAuthorRepository.Delete(author);
+            }
+        }
+
+        public async Task RemoveCategories(IEnumerable<CategoriesInBook> categories)
+        {
+            foreach (CategoriesInBook category in categories)
+            {
+                await _bookCategoriesRepository.Delete(category);
+            }
+        }
+
+        public async Task Update(Book entity)
+        {
+            await _bookRepository.Update(entity);
         }
     }
 }

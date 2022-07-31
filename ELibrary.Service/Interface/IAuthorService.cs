@@ -2,16 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Service.Interface
 {
     public interface IAuthorService
     {
-        IEnumerable<Author> GetAll();
-        Author Get(Guid? id);
-        void Insert(Author entity);
-        void Update(Author entity);
-        void Delete(Author entity);
-        void Delete(Guid? id);
+        Task<IEnumerable<Author>> GetAll();
+        Task<Author> Get(int id);
+        Task<Author> GetWithBooks(int id);
+        Task Insert(Author entity);
+        Task Update(Author entity);
+        Task Delete(Author entity);
+        Task Delete(int id);
     }
 }
