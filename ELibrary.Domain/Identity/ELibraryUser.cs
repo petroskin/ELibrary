@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ELibrary.Domain.Identity
 {
-    public class ELibraryUser : IdentityUser<int>
+    public class ELibraryUser : IdentityUser
     {
         // Roles: "Standard", "Premium", "Admin"
         public static int BooksAllowedForStandard = 3;
