@@ -42,6 +42,8 @@ namespace ELibrary.Service.Implementation
 
         public async Task Insert(Author entity)
         {
+            if (entity.Id != 0)
+                throw new Exception("Cannot insert entity with an id!");
             await _authorRepository.Insert(entity);
         }
 

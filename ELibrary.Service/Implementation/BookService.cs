@@ -63,6 +63,8 @@ namespace ELibrary.Service.Implementation
 
         public async Task Insert(Book entity)
         {
+            if (entity.Id != 0)
+                throw new Exception("Cannot insert entity with an id!");
             await _bookRepository.Insert(entity);
         }
 

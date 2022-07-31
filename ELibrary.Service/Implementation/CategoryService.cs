@@ -43,6 +43,8 @@ namespace ELibrary.Service.Implementation
 
         public async Task Insert(Category entity)
         {
+            if (entity.Id != 0)
+                throw new Exception("Cannot insert entity with an id!");
             await _categoryRepository.Insert(entity);
         }
 
