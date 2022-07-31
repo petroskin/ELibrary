@@ -69,7 +69,7 @@ namespace ELibrary.Repository.Implementation
 
         public async Task Insert(Book entity)
         {
-            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO book (\"name\", description, imagelink, publisherid) VALUES ('{entity.Name}', '{entity.Description}', '{entity.ImageLink}', '{entity.PublisherId}')");
+            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO book (\"name\", description, imagelink, publisherid, totalrents, avgrating) VALUES ('{entity.Name}', '{entity.Description}', '{entity.ImageLink}', '{entity.PublisherId}', 0, 0)");
         }
 
         public async Task Update(Book entity)
