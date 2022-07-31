@@ -20,7 +20,7 @@ namespace ELibrary.Service.Implementation
             _bookAuthorRepository = bookAuthorRepository;
         }
 
-        public async Task AddAuthors(Book book, IEnumerable<Author> authors)
+        private async Task AddAuthors(Book book, IEnumerable<Author> authors)
         {
             foreach(Author author in authors)
             {
@@ -28,7 +28,7 @@ namespace ELibrary.Service.Implementation
             }
         }
 
-        public async Task AddCategories(Book book, IEnumerable<Category> categories)
+        private async Task AddCategories(Book book, IEnumerable<Category> categories)
         {
             foreach (Category category in categories)
             {
@@ -68,7 +68,7 @@ namespace ELibrary.Service.Implementation
             await _bookRepository.Insert(entity);
         }
 
-        public async Task RemoveAuthors(IEnumerable<BookAuthor> authors)
+        private async Task RemoveAuthors(IEnumerable<BookAuthor> authors)
         {
             foreach (BookAuthor author in authors)
             {
@@ -76,7 +76,7 @@ namespace ELibrary.Service.Implementation
             }
         }
 
-        public async Task RemoveCategories(IEnumerable<CategoriesInBook> categories)
+        private async Task RemoveCategories(IEnumerable<CategoriesInBook> categories)
         {
             foreach (CategoriesInBook category in categories)
             {
