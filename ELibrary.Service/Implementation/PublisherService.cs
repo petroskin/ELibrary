@@ -11,10 +11,12 @@ namespace ELibrary.Service.Implementation
     public class PublisherService : IPublisherService
     {
         private readonly IPublisherRepository _publisherRepository;
+        private readonly IBookRepository _bookRepository;
 
-        public PublisherService(IPublisherRepository publisherRepository)
+        public PublisherService(IPublisherRepository publisherRepository, IBookRepository bookRepository)
         {
             _publisherRepository = publisherRepository;
+            _bookRepository = bookRepository;
         }
         public async Task Delete(Publisher entity)
         {
@@ -38,7 +40,9 @@ namespace ELibrary.Service.Implementation
 
         public async Task<Publisher> GetWithBooks(int id)
         {
-            return await _publisherRepository.GetWithBooks(id);
+            Publisher p = await _publisherRepository.Get(id);
+            p.Books = await _bookRepository.GetByPublisherId(id);
+            return p;
         }
 
         public async Task Insert(Publisher entity)

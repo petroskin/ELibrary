@@ -11,6 +11,7 @@ namespace ELibrary.Service.Interface
         Task<IEnumerable<Book>> GetAll();
         Task<Book> Get(int id);
         Task<Book> GetWithAuthorsCategoriesPublisher(int id);
+        Task<IEnumerable<Book>> GetAllWithAuthorsCategoriesPublisher();
         Task Insert(Book entity);
         Task Update(Book entity);
         Task Delete(Book entity);

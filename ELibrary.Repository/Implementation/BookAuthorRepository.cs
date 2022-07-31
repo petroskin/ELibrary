@@ -52,6 +52,18 @@ namespace ELibrary.Repository.Implementation
             return ba;
         }
 
+        public async Task<IEnumerable<BookAuthor>> GetByAuthorId(int id)
+        {
+            List<BookAuthor> ba = await _entities.FromSqlInterpolated($"SELECT * FROM bookauthors ba WHERE ba.authorid = {id}").ToListAsync();
+            return ba;
+        }
+
+        public async Task<IEnumerable<BookAuthor>> GetByBookId(int id)
+        {
+            List<BookAuthor> ba = await _entities.FromSqlInterpolated($"SELECT * FROM bookauthors ba WHERE ba.bookid = {id}").ToListAsync();
+            return ba;
+        }
+
         public async Task Insert(BookAuthor entity)
         {
             await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO bookauthors (authorid, bookid) VALUES ('{entity.AuthorId}', '{entity.BookId}')");

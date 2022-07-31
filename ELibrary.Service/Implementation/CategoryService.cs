@@ -11,10 +11,14 @@ namespace ELibrary.Service.Implementation
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IBookCategoriesRepository _bookCategoryRepository;
+        private readonly IBookRepository _bookRepository;
 
-        public CategoryService(ICategoryRepository categoryRepository)
+        public CategoryService(ICategoryRepository categoryRepository, IBookCategoriesRepository bookCategoriesRepository, IBookRepository bookRepository)
         {
             _categoryRepository = categoryRepository;
+            _bookCategoryRepository = bookCategoriesRepository;
+            _bookRepository = bookRepository;
         }
         public async Task Delete(Category entity)
         {
@@ -38,7 +42,18 @@ namespace ELibrary.Service.Implementation
 
         public async Task<Category> GetWithBooks(int id)
         {
-            return await _categoryRepository.GetWithBooks(id);
+            Category category = await _categoryRepository.Get(id);
+            category.Books = await _bookCategoryRepository.GetByCategoryId(id);
+            foreach (CategoriesInBook bookCategory in category.Books)
+            {
+                bookCategory.Book = await _bookRepository.Get(bookCategory.BookId);
+                bookCategory.Book.Categories = await _bookCategoryRepository.GetByBookId(bookCategory.BookId);
+                foreach (CategoriesInBook categoriesInBook in bookCategory.Book.Categories)
+                {
+                    categoriesInBook.Category = await _categoryRepository.Get(categoriesInBook.CategoryId);
+                }
+            }
+            return category;
         }
 
         public async Task Insert(Category entity)

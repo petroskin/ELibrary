@@ -14,7 +14,27 @@
 }
 <form asp-action="Index" method="get">
     <div class="col">
-        <select name="category" class="form-control" asp-items="ViewBag.categories"></select>
+        <select name="categoryId" class="form-control">
+            @if (ViewBag.chosenCategoryId == 0)
+            {
+                <option value="0" selected>All</option>
+            }
+            else
+            {
+                <option value="0">All</option>
+            }
+            @foreach (Category category in ViewBag.categories)
+            {
+                if (category.Id == ViewBag.chosenCategoryId)
+                {
+                    <option value="@category.Id" selected>@category.Name</option>
+                }
+                else
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            }
+        </select>
     </div>
     <div class="col">
         <input type="submit" value="Search" class="btn btn-light" />
@@ -26,10 +46,10 @@
     {
         <div class="col">
             <div class="card" style="width: 18rem;">
-                <img class="card-img-top" src="@book.Image" />
+                <img class="card-img-top" src="@book.ImageLink" />
                 <div class="card-body">
                     <h5 class="card-title">@book.Name</h5>
-                    <p class="card-text">@book.Description</p>
+                    <p class="card-text">@string.Join(", ", book.Categories.Select(b => b.Category.Name))</p>
                     <a asp-action="Details" asp-route-id="@book.Id" class="btn btn-info">Details</a>
                     <form asp-action="AddToCart" asp-route-id="@book.Id">
                         <input type="submit" value="Add To Cart" class="btn btn-primary" />
@@ -49,11 +69,11 @@
     <form asp-action="Export" method="get">
         <div class="form-group">
             <label class="control-label">Category:</label>
-            <select id="category" name="category">
-                <option value="All" selected>All</option>
-                @foreach (string category in ELibrary.Domain.Models.Book.BookCategories)
+            <select id="categoryId" name="categoryId">
+                <option value="0" selected>All</option>
+                @foreach (Category category in ViewBag.categories)
                 {
-                    <option value="@category">@category</option>
+                    <option value="@category.Id">@category.Name</option>
                 }
             </select>
         </div>

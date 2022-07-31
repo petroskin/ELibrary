@@ -23,27 +23,54 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Image" class="control-label"></label>
-                <input asp-for="Image" class="form-control" />
-                <span asp-validation-for="Image" class="text-danger"></span>
+                <label asp-for="ImageLink" class="control-label"></label>
+                <input asp-for="ImageLink" class="form-control" />
+                <span asp-validation-for="ImageLink" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="AuthorId" class="control-label"></label>
-                <select asp-for="AuthorId" class="form-control" asp-items="ViewBag.AuthorId"></select>
-                <span asp-validation-for="AuthorId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoriesInBook" class="control-label"></label>
-                <select asp-for="CategoriesInBook" id="CategoriesInBook" name="CategoriesInBook" size="4" multiple required>
-                    @foreach (string cat in ELibrary.Domain.Models.Book.BookCategories)
+                <label asp-for="Authors" class="control-label"></label>
+                <select asp-for="Authors" id="CategoriesInBook" name="Authors" size="4" multiple required>
+                    @foreach (Author author in ViewBag.authors)
                     {
-                        if (Model.CategoriesInBook.Select(i => i.Category).Contains(cat))
+                        if (Model.Authors.Select(i => i.AuthorId).Contains(author.Id))
                         {
-                            <option value="@cat" selected>@cat</option>
+                            <option value="@author.Id" selected>@author.FullName()</option>
                         }
                         else
                         {
-                            <option value="@cat">@cat</option>
+                            <option value="@author.Id">@author.FullName()</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Categories" class="control-label"></label>
+                <select asp-for="Categories" id="CategoriesInBook" name="Categories" size="4" multiple required>
+                    @foreach (Category category in ViewBag.categories)
+                    {
+                        if (Model.Categories.Select(i => i.CategoryId).Contains(category.Id))
+                        {
+                            <option value="@category.Id" selected>@category.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Publisher" class="control-label"></label>
+                <select asp-for="Publisher" id="CategoriesInBook" name="Publisher" required>
+                    @foreach (Publisher publisher in ViewBag.publishers)
+                    {
+                        if (Model.PublisherId == publisher.Id)
+                        {
+                            <option value="@publisher.Id" selected>@publisher.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@publisher.Id">@publisher.Name</option>
                         }
                     }
                 </select>

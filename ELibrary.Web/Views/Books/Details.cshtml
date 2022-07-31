@@ -23,22 +23,31 @@
             @Html.DisplayFor(model => model.Description)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CategoriesInBook)
+            @Html.DisplayNameFor(model => model.Categories)
         </dt>
         <dd class="col-sm-10">
-            @Model.CategoriesInBook.Select(i => i.Category).Aggregate((i, j) => i + ", " + j)
+            @Model.Categories.Select(i => i.Category.Name).Aggregate((i, j) => i + ", " + j)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Image)
+            @Html.DisplayNameFor(model => model.ImageLink)
         </dt>
         <dd class="col-sm-10">
-            <img src="@Model.Image" style="max-width: 300px;" />
+            <img src="@Model.ImageLink" style="max-width: 300px;" />
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Author)
+            @Html.DisplayNameFor(model => model.Authors)
         </dt>
         <dd class="col-sm-10">
-            <a asp-controller="Authors" asp-action="Details" asp-route-id="@Model.Author.Id">@Model.Author.FullName()</a>
+            @foreach(BookAuthor ba in Model.Authors)
+            {
+                <a asp-controller="Authors" asp-action="Details" asp-route-id="@ba.AuthorId">@ba.Author.FullName()</a><br />
+            }
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Publisher)
+        </dt>
+        <dd class="col-sm-10">
+            <a asp-controller="Publishers" asp-action="Details" asp-route-id="@Model.PublisherId">@Model.Publisher.Name</a>
         </dd>
     </dl>
 </div>

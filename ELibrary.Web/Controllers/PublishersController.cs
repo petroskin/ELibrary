@@ -7,27 +7,27 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ELibrary.Domain.Models;
 using ELibrary.Repository;
-using Microsoft.AspNetCore.Authorization;
 using ELibrary.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ELibrary.Web.Controllers
 {
-    public class AuthorsController : Controller
+    public class PublishersController : Controller
     {
-        private readonly IAuthorService _authorService;
+        private readonly IPublisherService _publisherService;
 
-        public AuthorsController(ApplicationDbContext context, IAuthorService authorService)
+        public PublishersController(IPublisherService publisherService)
         {
-            _authorService = authorService;
+            _publisherService = publisherService;
         }
 
-        // GET: Authors
+        // GET: Publishers
         public async Task<IActionResult> Index()
         {
-            return View(await _authorService.GetAll());
+            return View(await _publisherService.GetAll());
         }
 
-        // GET: Authors/Details/5
+        // GET: Publishers/Details/5
         public async Task<IActionResult> Details(int id)
         {
             if (id == 0)
@@ -35,39 +35,39 @@ namespace ELibrary.Web.Controllers
                 return NotFound();
             }
 
-            var author = await _authorService.GetWithBooks(id);
-            if (author == null)
+            var publisher = await _publisherService.GetWithBooks(id);
+            if (publisher == null)
             {
                 return NotFound();
             }
 
-            return View(author);
+            return View(publisher);
         }
 
-        // GET: Authors/Create
+        // GET: Publishers/Create
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Authors/Create
+        // POST: Publishers/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Name,Surname,Country,ImageLink")] Author author)
+        public async Task<IActionResult> Create([Bind("Name")] Publisher publisher)
         {
             if (ModelState.IsValid)
             {
-                await _authorService.Insert(author);
+                await _publisherService.Insert(publisher);
                 return RedirectToAction(nameof(Index));
             }
-            return View(author);
+            return View(publisher);
         }
 
-        // GET: Authors/Edit/5
+        // GET: Publishers/Edit/5
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -76,62 +76,60 @@ namespace ELibrary.Web.Controllers
                 return NotFound();
             }
 
-            var author = await _authorService.Get(id);
-            if (author == null)
+            var publisher = await _publisherService.Get(id);
+            if (publisher == null)
             {
                 return NotFound();
             }
-            return View(author);
+            return View(publisher);
         }
 
-        // POST: Authors/Edit/5
+        // POST: Publishers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Surname,Country,ImageLink,Id")] Author author)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Id")] Publisher publisher)
         {
-            if (id != author.Id)
+            if (id != publisher.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                await _authorService.Update(author);
+                await _publisherService.Update(publisher);
                 return RedirectToAction(nameof(Index));
             }
-            return View(author);
+            return View(publisher);
         }
 
-        // GET: Authors/Delete/5
+        // GET: Publishers/Delete/5
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            // cannot delete author if he has books
-
             if (id == 0)
             {
                 return NotFound();
             }
 
-            var author = await _authorService.Get(id);
-            if (author == null)
+            var publisher = await _publisherService.Get(id);
+            if (publisher == null)
             {
                 return NotFound();
             }
 
-            return View(author);
+            return View(publisher);
         }
 
-        // POST: Authors/Delete/5
+        // POST: Publishers/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _authorService.Delete(id);
+            await _publisherService.Delete(id);
             return RedirectToAction(nameof(Index));
         }
     }

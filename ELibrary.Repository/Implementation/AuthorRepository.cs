@@ -53,16 +53,6 @@ namespace ELibrary.Repository.Implementation
             return a;
         }
 
-        public async Task<Author> GetWithBooks(int id)
-        {
-            Author a = await _entities.FromSqlInterpolated($"SELECT * FROM author a WHERE a.id = {id}").Include(a => a.Books).ThenInclude(ba => ba.Book).FirstOrDefaultAsync();
-            if (a == null)
-            {
-                throw new Exception("Entity not found.");
-            }
-            return a;
-        }
-
         public async Task Insert(Author entity)
         {
             await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO author (\"name\", surname, country, imagelink) VALUES ('{entity.Name}', '{entity.Surname}', '{entity.Country}', '{entity.ImageLink}')");

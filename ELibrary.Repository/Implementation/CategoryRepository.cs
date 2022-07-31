@@ -52,16 +52,6 @@ namespace ELibrary.Repository.Implementation
             return c;
         }
 
-        public async Task<Category> GetWithBooks(int id)
-        {
-            Category c = await _entities.FromSqlInterpolated($"SELECT * FROM category c WHERE c.id = {id}").Include(c => c.Books).ThenInclude(bc => bc.Book).FirstOrDefaultAsync();
-            if (c == null)
-            {
-                throw new Exception("Entity not found.");
-            }
-            return c;
-        }
-
         public async Task Insert(Category entity)
         {
             await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO category (\"name\") VALUES ('{entity.Name}')");

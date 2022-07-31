@@ -8,6 +8,5 @@ namespace ELibrary.Repository.Interface
 {
     public interface ICategoryRepository : IRepository<Category>
     {
-        Task<Category> GetWithBooks(int id);
     }
 }

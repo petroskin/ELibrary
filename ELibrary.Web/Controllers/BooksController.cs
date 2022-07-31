@@ -21,18 +21,22 @@ namespace ELibrary.Web.Controllers
     {
         private readonly IAuthorService _authorService;
         private readonly IBookService _bookService;
+        private readonly IPublisherService _publisherService;
+        private readonly ICategoryService _categoryService;
         private readonly IUserService _userService;
         private readonly ICartService _cartService;
-        public BooksController(IAuthorService authorService, IBookService bookService, IUserService userService, ICartService cartService)
+        public BooksController(IAuthorService authorService, IBookService bookService, IPublisherService publisherService, ICategoryService categoryService, IUserService userService, ICartService cartService)
         {
             _authorService = authorService;
             _bookService = bookService;
+            _publisherService = publisherService;
+            _categoryService = categoryService;
             _userService = userService;
             _cartService = cartService;
         }
 
         // GET: Books
-        public IActionResult Index(string category)
+        public async Task<IActionResult> Index(int categoryId)
         {
             ViewData["BooksLeft"] = "";
             if (User.Identity.IsAuthenticated)
@@ -42,27 +46,33 @@ namespace ELibrary.Web.Controllers
                 ViewData["BooksLeft"] = booksLeft;
             }
 
-            IEnumerable<Book> books = _bookService.GetAll();
-            if (category != null && category != "All")
+            IEnumerable<Category> categories = await _categoryService.GetAll();
+            Category chosenCategory = null;
+            IEnumerable<Book> books;
+            if (categoryId == 0)
             {
-                books = books.Where(i => i.CategoriesInBook.Select(j => j.Category).Contains(category));
+                books = await _bookService.GetAll();
             }
-            List<string> categories = new List<string> { "All" };
-            categories.AddRange(Book.BookCategories.ToList());
-            ViewData["categories"] = new SelectList(categories);
+            else
+            {
+                chosenCategory = await _categoryService.GetWithBooks(categoryId);
+                books = chosenCategory.Books.Select(bc => bc.Book);
+            }
 
+            ViewData["categories"] = categories;
+            ViewData["chosenCategoryId"] = categoryId;
             return View(books);
         }
 
         // GET: Books/Details/5
-        public IActionResult Details(Guid? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
+            if (id == 0)
             {
                 return NotFound();
             }
 
-            var book = _bookService.Get(id);
+            var book = await _bookService.GetWithAuthorsCategoriesPublisher(id);
             if (book == null)
             {
                 return NotFound();
@@ -79,18 +89,8 @@ namespace ELibrary.Web.Controllers
 
         // GET: Books/Create
         [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            IEnumerable<Author> authors = _authorService.GetAll();
-            IEnumerable<SelectListItem> selectList =
-                from i in authors
-                select new SelectListItem
-                {
-                    Selected = false,
-                    Value = i.Id.ToString(),
-                    Text = i.FullName()
-                };
-            ViewData["AuthorId"] = selectList;
             return View();
         }
 
@@ -100,49 +100,37 @@ namespace ELibrary.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create([Bind("Name,Description,Image,AuthorId,CategoriesInBook,Id")] Book book)
+        public async Task<IActionResult> Create([Bind("Name,Description,Image")] Book book)
         {
             if (ModelState.IsValid)
             {
-                book.Id = Guid.NewGuid();
-                List<CategoriesInBook> list = book.CategoriesInBook.ToList();
-                foreach (string i in Request.Form["CategoriesInBook"])
-                {
-                    if (!list.Select(i => i.Category).Contains(i))
-                        list.Add(new CategoriesInBook(book, i));
-                }
-                book.CategoriesInBook = list;
-                _bookService.Insert(book);
+                await _bookService.Insert(book);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AuthorId"] = new SelectList(_authorService.GetAll(), "Id", "FullName()", book.AuthorId);
             return View(book);
         }
 
         // GET: Books/Edit/5
         [Authorize(Roles = "Admin")]
-        public IActionResult Edit(Guid? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
+            if (id == 0)
             {
                 return NotFound();
             }
 
-            var book = _bookService.Get(id);
+            var book = await _bookService.GetWithAuthorsCategoriesPublisher(id);
             if (book == null)
             {
                 return NotFound();
             }
-            IEnumerable<Author> authors = _authorService.GetAll();
-            IEnumerable<SelectListItem> selectList =
-                from i in authors
-                select new SelectListItem
-                {
-                    Selected = (book.AuthorId == i.Id),
-                    Value = i.Id.ToString(),
-                    Text = i.FullName()
-                };
-            ViewData["AuthorId"] = selectList;
+
+            IEnumerable<Author> authors = await _authorService.GetAll();
+            IEnumerable<Publisher> publishers = await _publisherService.GetAll();
+            IEnumerable<Category> categories = await _categoryService.GetAll();
+            ViewData["authors"] = authors;
+            ViewData["publishers"] = publishers;
+            ViewData["categories"] = categories;
             return View(book);
         }
 
@@ -152,7 +140,7 @@ namespace ELibrary.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Edit(Guid id, [Bind("Name,Description,Image,AuthorId,Id")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,Image,Publisher,Id")] Book book)
         {
             if (id != book.Id)
             {
@@ -161,49 +149,41 @@ namespace ELibrary.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                List<BookAuthor> bookAuthors = new List<BookAuthor>();
+                List<CategoriesInBook> bookCategories = new List<CategoriesInBook>();
+                foreach (string authorId in Request.Form["Authors"])
                 {
-                    List<CategoriesInBook> list = book.CategoriesInBook.ToList();
-                    foreach (string i in Request.Form["CategoriesInBook"])
-                    {
-                        if (!list.Select(i => i.Category).Contains(i))
-                            list.Add(new CategoriesInBook(book, i));
-                    }
-                    foreach (CategoriesInBook i in list)
-                    {
-                        if (!Request.Form["CategoriesInBook"].Contains(i.Category))
-                            list.Remove(i);
-                    }
-                    book.CategoriesInBook = list;
-                    _bookService.Update(book);
+                    bookAuthors.Add(new BookAuthor(int.Parse(authorId), book.Id));
                 }
-                catch (DbUpdateConcurrencyException)
+                foreach (string categoryId in Request.Form["Categories"])
                 {
-                    if (!BookExists(book.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    bookCategories.Add(new CategoriesInBook(book.Id, int.Parse(categoryId)));
                 }
+                book.Authors = bookAuthors;
+                book.Categories = bookCategories;
+                await _bookService.Update(book);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AuthorId"] = new SelectList(_authorService.GetAll(), "Id", "FullName()", book.AuthorId);
+
+            IEnumerable<Author> authors = await _authorService.GetAll();
+            IEnumerable<Publisher> publishers = await _publisherService.GetAll();
+            IEnumerable<Category> categories = await _categoryService.GetAll();
+            ViewData["authors"] = authors;
+            ViewData["publishers"] = publishers;
+            ViewData["categories"] = categories;
             return View(book);
         }
 
         // GET: Books/Delete/5
         [Authorize(Roles = "Admin")]
-        public IActionResult Delete(Guid? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
+            if (id == 0)
             {
                 return NotFound();
             }
 
-            var book = _bookService.Get(id);
+            var book = await _bookService.GetWithAuthorsCategoriesPublisher(id);
             if (book == null)
             {
                 return NotFound();
@@ -216,24 +196,24 @@ namespace ELibrary.Web.Controllers
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult DeleteConfirmed(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var book = _bookService.Get(id);
-            _bookService.Delete(book);
+            await _bookService.Delete(id);
             return RedirectToAction(nameof(Index));
         }
         // POST: Books/AddToCart
         [HttpPost]
         [Authorize]
-        public IActionResult AddToCart(Guid id)
+        public async Task<IActionResult> AddToCart(int id)
         {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _cartService.AddToCart(userId, id);
-            return RedirectToAction(nameof(Index));
+            throw new NotImplementedException();
+            //string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            //_cartService.AddToCart(userId, id);
+            //return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles = "Admin")]
         // GET: Books/Export?category=All
-        public IActionResult Export(string category)
+        public async Task<IActionResult> Export(int categoryId)
         {
             string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             var workbook = new XLWorkbook();
@@ -242,17 +222,14 @@ namespace ELibrary.Web.Controllers
             worksheet.Cell(1, 1).Value = "Id";
             worksheet.Cell(1, 2).Value = "Name";
             worksheet.Cell(1, 3).Value = "Description";
-            worksheet.Cell(1, 4).Value = "Author";
+            worksheet.Cell(1, 4).Value = "Authors";
             worksheet.Cell(1, 5).Value = "Categories";
+            worksheet.Cell(1, 6).Value = "Publisher";
 
-            IEnumerable<Book> books;
-            if (category == "All" || category == "")
+            IEnumerable<Book> books = await _bookService.GetAllWithAuthorsCategoriesPublisher();
+            if (categoryId != 0)
             {
-                books = _bookService.GetAll();
-            }
-            else
-            {
-                books = _bookService.GetAll().Where(i => i.CategoriesInBook.Select(j => j.Category).Contains(category));
+                books = books.Where(b => b.Categories.Select(bc => bc.CategoryId).Contains(categoryId));
             }
             int index = 1;
             foreach (Book book in books)
@@ -261,8 +238,9 @@ namespace ELibrary.Web.Controllers
                 worksheet.Cell(index, 1).Value = book.Id;
                 worksheet.Cell(index, 2).Value = book.Name;
                 worksheet.Cell(index, 3).Value = book.Description;
-                worksheet.Cell(index, 4).Value = book.Author.FullName();
-                worksheet.Cell(index, 5).Value = book.CategoriesInBook.Select(i => i.Category).Aggregate((i, j) => i + ", " + j);
+                worksheet.Cell(index, 4).Value = string.Join(", ", book.Authors.Select(ba => ba.Author.FullName()));
+                worksheet.Cell(index, 5).Value = string.Join(", ", book.Categories.Select(ba => ba.Category.Name));
+                worksheet.Cell(index, 6).Value = book.Publisher.Name;
             }
 
             using (var stream = new MemoryStream())
@@ -272,11 +250,6 @@ namespace ELibrary.Web.Controllers
                 return File(content, contentType, "Books.xlsx");
             }
         }
-        private bool BookExists(Guid id)
-        {
-            return _bookService.Get(id) != null;
-        }
-
         private string CalculateBooksLeft(ELibraryUserDto dto)
         {
             if (dto.Role == "Standard")

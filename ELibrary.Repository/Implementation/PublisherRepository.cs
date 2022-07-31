@@ -52,16 +52,6 @@ namespace ELibrary.Repository.Implementation
             return p;
         }
 
-        public async Task<Publisher> GetWithBooks(int id)
-        {
-            Publisher p = await _entities.FromSqlInterpolated($"SELECT * FROM publisher p WHERE p.id = {id}").Include(p => p.Books).FirstOrDefaultAsync();
-            if (p == null)
-            {
-                throw new Exception("Entity not found.");
-            }
-            return p;
-        }
-
         public async Task Insert(Publisher entity)
         {
             await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO publisher (\"name\") VALUES ('{entity.Name}')");

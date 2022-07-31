@@ -28,6 +28,10 @@ namespace ELibrary.Repository
         public virtual DbSet<BooksInRent> BooksInRents { get; set; }
         public virtual DbSet<EmailMessage> EmailMessages { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=postgres;Username=<username here>;Password=<password here>;SearchPath=elibrary");
+        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -63,30 +67,30 @@ namespace ELibrary.Repository
 
             // previous
 
-            builder.Entity<BooksInCart>()
-                .HasOne(i => i.Cart)
-                .WithMany(i => i.BooksInCart)
-                .HasForeignKey(i => i.CartId);
+            //builder.Entity<BooksInCart>()
+            //    .HasOne(i => i.Cart)
+            //    .WithMany(i => i.BooksInCart)
+            //    .HasForeignKey(i => i.CartId);
 
-            builder.Entity<BooksInCart>()
-                .HasOne(i => i.Book)
-                .WithMany()
-                .HasForeignKey(i => i.BookId);
+            //builder.Entity<BooksInCart>()
+            //    .HasOne(i => i.Book)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.BookId);
 
-            builder.Entity<BooksInRent>()
-                .HasOne(i => i.Rent)
-                .WithMany(i => i.BooksInRent)
-                .HasForeignKey(i => i.RentId);
+            //builder.Entity<BooksInRent>()
+            //    .HasOne(i => i.Rent)
+            //    .WithMany(i => i.BooksInRent)
+            //    .HasForeignKey(i => i.RentId);
 
-            builder.Entity<BooksInRent>()
-                .HasOne(i => i.Book)
-                .WithMany()
-                .HasForeignKey(i => i.BookId);
+            //builder.Entity<BooksInRent>()
+            //    .HasOne(i => i.Book)
+            //    .WithMany()
+            //    .HasForeignKey(i => i.BookId);
 
-            builder.Entity<Rent>()
-                .HasOne(i => i.User)
-                .WithMany(i => i.Rents)
-                .HasForeignKey(i => i.UserId);
+            //builder.Entity<Rent>()
+            //    .HasOne(i => i.User)
+            //    .WithMany(i => i.Rents)
+            //    .HasForeignKey(i => i.UserId);
         }
     }
 }

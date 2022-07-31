@@ -36,8 +36,7 @@ namespace ELibrary.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFrameworkNpgsql()
-                .AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PostgresqlRemodelConnection")));
             services.AddDefaultIdentity<ELibraryUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();

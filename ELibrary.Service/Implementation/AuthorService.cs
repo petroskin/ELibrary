@@ -11,9 +11,13 @@ namespace ELibrary.Service.Implementation
     public class AuthorService : IAuthorService
     {
         private readonly IAuthorRepository _authorRepository;
-        public AuthorService(IAuthorRepository authorRepository)
+        private readonly IBookAuthorRepository _bookAuthorRepository;
+        private readonly IBookRepository _bookRepository;
+        public AuthorService(IAuthorRepository authorRepository, IBookAuthorRepository bookAuthorRepository, IBookRepository bookRepository)
         {
             _authorRepository = authorRepository;
+            _bookAuthorRepository = bookAuthorRepository;
+            _bookRepository = bookRepository;
         }
         public async Task Delete(Author entity)
         {
@@ -37,7 +41,13 @@ namespace ELibrary.Service.Implementation
 
         public async Task<Author> GetWithBooks(int id)
         {
-            return await _authorRepository.GetWithBooks(id);
+            Author author = await _authorRepository.Get(id);
+            author.Books = await _bookAuthorRepository.GetByAuthorId(id);
+            foreach (BookAuthor bookAuthor in author.Books)
+            {
+                bookAuthor.Book = await _bookRepository.Get(bookAuthor.BookId);
+            }
+            return author;
         }
 
         public async Task Insert(Author entity)

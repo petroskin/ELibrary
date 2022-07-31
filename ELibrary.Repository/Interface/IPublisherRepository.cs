@@ -8,6 +8,5 @@ namespace ELibrary.Repository.Interface
 {
     public interface IPublisherRepository : IRepository<Publisher>
     {
-        Task<Publisher> GetWithBooks(int id);
     }
 }

@@ -53,17 +53,9 @@ namespace ELibrary.Repository.Implementation
             return b;
         }
 
-        public async Task<Book> GetWithAuthorsCategoriesPublisher(int id)
+        public async Task<IEnumerable<Book>> GetByPublisherId(int id)
         {
-            Book b = await _entities.FromSqlInterpolated($"SELECT * FROM book b WHERE b.id = {id}")
-                .Include(b => b.Publisher)
-                .Include(b => b.Categories).ThenInclude(bc => bc.Category)
-                .Include(b => b.Authors).ThenInclude(ba => ba.Author)
-                .FirstOrDefaultAsync();
-            if (b == null)
-            {
-                throw new Exception("Entity not found.");
-            }
+            List<Book> b = await _entities.FromSqlInterpolated($"SELECT * FROM book b WHERE b.publisherid = {id}").ToListAsync();
             return b;
         }
 

@@ -1,20 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace ELibrary.Domain.Models
 {
+    [Table("book", Schema = "elibrary")]
     public class Book : BaseEntity
     {
         public static IEnumerable<string> BookCategories = new List<string> { "Adventure", "Classic", "Novel", "Drama", "Fantasy", "Humor", "Mythology", "Romance", "Sci-Fi" };
+        [Column("name")]
         public string Name { get; set; }
+        [Column("description")]
         public string Description { get; set; }
+        [Column("imagelink")]
         public string ImageLink { get; set; }
         public IEnumerable<BookAuthor> Authors { get; set; }
         public IEnumerable<CategoriesInBook> Categories { get; set; }
+        [Column("publisherid")]
         public int PublisherId { get; set; }
         public Publisher Publisher { get; set; }
+        [Column("totalrents")]
         public int TotalRents { get; set; }
+        [Column("avgrating")]
         public decimal AvgRating { get; set; }
         public Book()
         {

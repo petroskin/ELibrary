@@ -11,30 +11,45 @@
     <h4>Book</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Image)
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Categories)
         </dt>
-        <dd class = "col-sm-10">
-            <img src="@Model.Image" style="max-width: 300px;" />
+        <dd class="col-sm-10">
+            @Model.Categories.Select(i => i.Category.Name).Aggregate((i, j) => i + ", " + j)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Author)
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ImageLink)
         </dt>
-        <dd class = "col-sm-10">
-            <a asp-controller="Authors" asp-action="Details" asp-route-id="@Model.Author.Id">@Model.Author.FullName()</a>
-        </dd class>
+        <dd class="col-sm-10">
+            <img src="@Model.ImageLink" style="max-width: 300px;" />
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Authors)
+        </dt>
+        <dd class="col-sm-10">
+            @foreach (BookAuthor ba in Model.Authors)
+            {
+                <a asp-controller="Authors" asp-action="Details" asp-route-id="@ba.AuthorId">@ba.Author.FullName()</a>
+            }
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Publisher)
+        </dt>
+        <dd class="col-sm-10">
+            <a asp-controller="Publishers" asp-action="Details" asp-route-id="@Model.PublisherId">@Model.Publisher.Name</a>
+        </dd>
     </dl>
     
     <form asp-action="Delete">
