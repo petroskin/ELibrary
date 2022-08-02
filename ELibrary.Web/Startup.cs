@@ -39,7 +39,7 @@ namespace ELibrary.Web
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PostgresqlRemodelConnection")));
             services.AddDefaultIdentity<ELibraryUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                .AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddRoles<ELibraryRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped(typeof(IPublisherRepository), typeof(PublisherRepository));

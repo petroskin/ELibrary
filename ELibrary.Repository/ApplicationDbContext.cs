@@ -8,7 +8,7 @@ using System.Text;
 
 namespace ELibrary.Repository
 {
-    public class ApplicationDbContext : IdentityDbContext<ELibraryUser>
+    public class ApplicationDbContext : IdentityDbContext<ELibraryUser, ELibraryRole, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
