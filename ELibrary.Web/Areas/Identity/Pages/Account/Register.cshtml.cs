@@ -15,28 +15,35 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using ELibrary.Domain.Models;
+using ELibrary.Repository.Interface;
 
 namespace ELibrary.Web.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class RegisterModel : PageModel
     {
+        private readonly ICartRepository _cartRepository;
+        private readonly IUserRepository _userRepository;
         private readonly SignInManager<ELibraryUser> _signInManager;
         private readonly UserManager<ELibraryUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<ELibraryRole> _roleManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
+            ICartRepository cartRepository,
+            IUserRepository userRepository,
             UserManager<ELibraryUser> userManager,
+            RoleManager<ELibraryRole> roleManager,
             SignInManager<ELibraryUser> signInManager,
-            RoleManager<IdentityRole> roleManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender)
         {
+            _cartRepository = cartRepository;
+            _userRepository = userRepository;
             _userManager = userManager;
-            _signInManager = signInManager;
             _roleManager = roleManager;
+            _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
         }
@@ -85,25 +92,21 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            await createRoles();
             if (ModelState.IsValid)
             {
-                if (!await _roleManager.RoleExistsAsync("Admin"))
-                {
-                    createRoles().Wait();
-                }
 
                 var user = new ELibraryUser { UserName = Input.Email,
                     Email = Input.Email,
                     Name = Input.Name,
-                    Surname = Input.Surname,
-                    UserCart = new Cart()
+                    Surname = Input.Surname
                 };
-                user.UserCart.UserId = user.Id;
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
+                    await _cartRepository.Create((await _userRepository.GetLatest()).Id);
                     _logger.LogInformation("User created a new account with password.");
-                    _userManager.AddToRoleAsync(user, "Standard").Wait();
+                    await _userManager.AddToRoleAsync(user, "Free");
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
@@ -137,37 +140,21 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
 
         private async Task createRoles()
         {
-            // create roles
-
-            var roleStandard = new IdentityRole();
-            roleStandard.Name = "Standard";
-            await _roleManager.CreateAsync(roleStandard);
-
-            var rolePremium = new IdentityRole();
-            rolePremium.Name = "Premium";
-            await _roleManager.CreateAsync(rolePremium);
-
-            var roleAdmin = new IdentityRole();
-            roleAdmin.Name = "Admin";
-            await _roleManager.CreateAsync(roleAdmin);
-
-            // add admin user
-
-            var adminUser = new ELibraryUser
+            if (await _roleManager.RoleExistsAsync("Admin"))
             {
-                UserName = "admin@admin.admin",
-                Email = "admin@admin.admin",
-                Name = "Admin",
-                Surname = "Admin",
-                UserCart = new Cart(),
-                EmailConfirmed = true
+                return;
+            }
+            List<ELibraryRole> roles = new List<ELibraryRole>()
+            {
+                new ELibraryRole("Free", 0.00M),
+                new ELibraryRole("Regular", 3.99M),
+                new ELibraryRole("Premium", 9.99M),
+                new ELibraryRole("Gold", 19.99M),
+                new ELibraryRole("Admin", 0.00M),
             };
-            adminUser.UserCart.UserId = adminUser.Id;
-            var adminResult = await _userManager.CreateAsync(adminUser, "P@ssw0rd");
-
-            if (adminResult.Succeeded)
+            foreach(ELibraryRole role in roles)
             {
-                _userManager.AddToRoleAsync(adminUser, "Admin").Wait();
+                await _roleManager.CreateAsync(role);
             }
         }
     }

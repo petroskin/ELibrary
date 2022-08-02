@@ -21,7 +21,7 @@
             <div class="form-group">
                 <label class="control-label">Role</label>
                 <select asp-for="Role" id="role" name="role" required>
-                    @foreach (Microsoft.AspNetCore.Identity.IdentityRole role in (List<Microsoft.AspNetCore.Identity.IdentityRole>)ViewData["roles"])
+                    @foreach (ELibrary.Domain.Identity.ELibraryRole role in (IEnumerable<ELibrary.Domain.Identity.ELibraryRole>)ViewData["roles"])
                     {
                         if (Model.Role == role.Name)
                         {

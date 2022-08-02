@@ -25,68 +25,35 @@ namespace ELibrary.Web.Controllers
             _rentService = rentService;
         }
         // GET: Cart
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Cart model = _cartService.getCart(userId);
+            Cart model = await _cartService.getCart(userId);
 
-            int booksLeft = CalculateBooksLeft(_userService.GetDto(userId));
+            int booksLeft = CalculateBooksLeft(await _userService.GetDto(userId));
             ViewData["BooksLeft"] = booksLeft;
-            ViewData["Status"] = booksLeft == -1 ? "Premium" : "Standard";
 
-            ViewData["BooksRented"] = _rentService.Get(userId, DateTime.Now.Year, DateTime.Now.Month).BooksInRent.Select(i => i.Book).ToList();
+            ViewData["BooksRented"] = (await _rentService.GetCurrentRentsByUser(userId)).Select(i => i.BookId);
 
             return View(model);
         }
         // GET: Cart/RemoveFromCart/5
-        public IActionResult RemoveFromCart(Guid id)
+        public async Task<IActionResult> RemoveFromCart(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _cartService.RemoveFromCart(userId, id);
+            await _cartService.RemoveFromCart(id);
             return RedirectToAction(nameof(Index));
         }
         // POST: Cart/RentNow
         [HttpPost]
-        public IActionResult RentNow()
+        public async Task<IActionResult> RentNow()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Cart cart = _cartService.getCart(userId);
-            Rent rent = _rentService.Get(userId, DateTime.Now.Year, DateTime.Now.Month);
-            List<BooksInRent> booksInRent = rent.BooksInRent.ToList();
-
-            ELibraryUserDto userDto = _userService.GetDto(userId);
-            if (userDto.Role == "Standard" &&
-                userDto.BooksRented + cart.BooksInCart.Where(i => !booksInRent.Select(j => j.Book).Contains(i.Book)).Count() > ELibraryUser.BooksAllowedForStandard)
-            {
-                return RedirectToAction(nameof(Index));
-            }
-
-            foreach (Book book in cart.BooksInCart.Select(i => i.Book))
-            {
-                if (!booksInRent.Select(i => i.Book).Contains(book))
-                {
-                    booksInRent.Add(new BooksInRent
-                    {
-                        Book = book,
-                        Rent = rent
-                    });
-                }
-            }
-            rent.BooksInRent = booksInRent;
-            _rentService.Update(rent);
-            _cartService.ClearCart(userId);
+            await _rentService.RentNow(await _userService.GetDto(User.FindFirstValue(ClaimTypes.NameIdentifier)));
             return RedirectToAction(nameof(Index));
         }
         private int CalculateBooksLeft(ELibraryUserDto dto)
         {
-            if (dto.Role == "Standard")
-            {
-                return ELibraryUser.BooksAllowedForStandard - dto.BooksRented;
-            }
-            else
-            {
-                return -1;
-            }
+            int ret = ELibraryUser.BooksAllowed[dto.Role] - dto.BooksRented;
+            return ret < 0 ? -1 : ret;
         }
     }
 }

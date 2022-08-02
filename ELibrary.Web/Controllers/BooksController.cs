@@ -42,7 +42,7 @@ namespace ELibrary.Web.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 string booksLeft = "Number of books you can rent this month: ";
-                booksLeft += CalculateBooksLeft(_userService.GetDto(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+                booksLeft += CalculateBooksLeft(await _userService.GetDto(User.FindFirstValue(ClaimTypes.NameIdentifier)));
                 ViewData["BooksLeft"] = booksLeft;
             }
 
@@ -81,7 +81,7 @@ namespace ELibrary.Web.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 string booksLeft = "Number of books you can rent this month: ";
-                booksLeft += CalculateBooksLeft(_userService.GetDto(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+                booksLeft += CalculateBooksLeft(await _userService.GetDto(User.FindFirstValue(ClaimTypes.NameIdentifier)));
                 ViewData["BooksLeft"] = booksLeft;
             }
             return View(book);
@@ -100,7 +100,7 @@ namespace ELibrary.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Name,Description,Image")] Book book)
+        public async Task<IActionResult> Create([Bind("Name,Description,ImageLink")] Book book)
         {
             if (ModelState.IsValid)
             {
@@ -140,7 +140,7 @@ namespace ELibrary.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,Image,Publisher,Id")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,ImageLink,PublisherId,Id")] Book book)
         {
             if (id != book.Id)
             {
@@ -206,10 +206,9 @@ namespace ELibrary.Web.Controllers
         [Authorize]
         public async Task<IActionResult> AddToCart(int id)
         {
-            throw new NotImplementedException();
-            //string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            //_cartService.AddToCart(userId, id);
-            //return RedirectToAction(nameof(Index));
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _cartService.AddToCart(userId, id);
+            return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles = "Admin")]
         // GET: Books/Export?category=All
@@ -252,14 +251,10 @@ namespace ELibrary.Web.Controllers
         }
         private string CalculateBooksLeft(ELibraryUserDto dto)
         {
-            if (dto.Role == "Standard")
-            {
-                return string.Format("{0}", ELibraryUser.BooksAllowedForStandard - dto.BooksRented);
-            }
-            else
-            {
+            if (ELibraryUser.BooksAllowed[dto.Role] == -1)
                 return "unlimited";
-            }
+            int amount = ELibraryUser.BooksAllowed[dto.Role] - dto.BooksRented;
+            return amount.ToString();
         }
     }
 }

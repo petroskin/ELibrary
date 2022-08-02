@@ -11,8 +11,15 @@ namespace ELibrary.Domain.Identity
     [Table("elibuser", Schema = "elibrary")]
     public class ELibraryUser : IdentityUser<int>
     {
-        // Roles: "Standard", "Premium", "Admin"
-        public static int BooksAllowedForStandard = 3;
+        // Roles: "Free", "Regular", "Premium", "Gold", "Admin"
+        public static Dictionary<string, int> BooksAllowed = new Dictionary<string, int>()
+        {
+            { "Free", 1 },
+            { "Regular", 3 },
+            { "Premium", 5 },
+            { "Gold", -1 },
+            { "Admin", -1 },
+        };
 
         [Key]
         [Column("id")]
@@ -26,6 +33,7 @@ namespace ELibrary.Domain.Identity
         [Column("password")]
         public override string PasswordHash { get => base.PasswordHash; set => base.PasswordHash = value; }
         public IEnumerable<UserRole> Roles { get; set; }
+        [NotMapped]
         public Cart UserCart { get; set; }
         public IEnumerable<Rent> Rents { get; set; }
         public IEnumerable<Review> Reviews { get; set; }

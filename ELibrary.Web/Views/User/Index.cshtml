@@ -30,7 +30,7 @@
                 <tr>
                     <td>@item.Email</td>
                     <td>
-                        @if ((string)ViewData["user"] != item.Id)
+                        @if ((string)ViewData["user"] != item.Id.ToString())
                         {
                             <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id">Manage roles</a>
                         }

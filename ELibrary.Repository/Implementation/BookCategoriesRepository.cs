@@ -66,12 +66,12 @@ namespace ELibrary.Repository.Implementation
 
         public async Task Insert(CategoriesInBook entity)
         {
-            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO bookcategories (categoryid, bookid) VALUES ('{entity.CategoryId}', '{entity.BookId}')");
+            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO bookcategories (categoryid, bookid) VALUES ({entity.CategoryId}, {entity.BookId})");
         }
 
         public async Task Update(CategoriesInBook entity)
         {
-            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"UPDATE bookcategories SET categoryid = '{entity.CategoryId}', bookid = '{entity.BookId}' WHERE id = {entity.Id}");
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"UPDATE bookcategories SET categoryid = {entity.CategoryId}, bookid = {entity.BookId} WHERE id = {entity.Id}");
             if (affectedCount == 0)
             {
                 throw new Exception("Entity not found.");

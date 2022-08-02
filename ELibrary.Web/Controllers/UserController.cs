@@ -24,22 +24,22 @@ namespace ELibrary.Web.Controllers
         }
         // GET: User
         [Authorize(Roles = "Admin")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            IEnumerable<ELibraryUser> users = _userService.GetAll();
+            IEnumerable<ELibraryUser> users = _userService.GetUsers();
             ViewData["user"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return View(users);
         }
         // GET: User/Details/5
         [Authorize(Roles = "Admin")]
-        public IActionResult Details(string id)
+        public async Task<IActionResult> Details(string id)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (id == userId)
             {
                 return RedirectToAction(nameof(Index));
             }
-            ELibraryUserDto model = _userService.GetDto(id);
+            ELibraryUserDto model = await _userService.GetDto(id);
             if (model == null)
             {
                 return RedirectToAction(nameof(Index));
@@ -51,14 +51,15 @@ namespace ELibrary.Web.Controllers
         // POST: /User/Details/5
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult Details([Bind("Id,Role")] ELibraryUserDto model)
+        public async Task<IActionResult> Details([Bind("Id,Role")] ELibraryUserDto model)
         {
-            _userService.ChangeRoles(model);
+            ELibraryUser user = await _userService.Get(model.Id);
+            await _userService.ChangeRole(user, user.Roles.Where(r => r.DateEnd == null).FirstOrDefault().Role.Name, model.Role);
             return RedirectToAction(nameof(Index));
         }
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public IActionResult Import(IFormFile file)
+        public async Task<IActionResult> Import(IFormFile file)
         {
             //////////////////////////////////////////////////////////////////////////////
             //                                                                          //
@@ -116,40 +117,41 @@ namespace ELibrary.Web.Controllers
         }
         //GET: /User/Status
         [Authorize]
-        public IActionResult Status()
+        public async Task<IActionResult> Status()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userDto = _userService.GetDto(userId);
+            var userDto = await _userService.GetDto(userId);
             ViewData["UserRole"] = userDto.Role;
             return View();
         }
 
-        public IActionResult UpgradeStatus(string stripeEmail, string stripeToken)
+        public async Task<IActionResult> UpgradeStatus(string stripeEmail, string stripeToken)
         {
-            var customerService = new CustomerService();
-            var chargeService = new ChargeService();
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            throw new NotImplementedException();
+            //var customerService = new CustomerService();
+            //var chargeService = new ChargeService();
+            //string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var customer = customerService.Create(new CustomerCreateOptions
-            {
-                Email = stripeEmail,
-                Source = stripeToken
-            });
+            //var customer = customerService.Create(new CustomerCreateOptions
+            //{
+            //    Email = stripeEmail,
+            //    Source = stripeToken
+            //});
 
-            var charge = chargeService.Create(new ChargeCreateOptions
-            {
-                Amount = (1000),
-                Description = "ELibrary Status Upgrade",
-                Currency = "usd",
-                Customer = customer.Id
-            });
+            //var charge = chargeService.Create(new ChargeCreateOptions
+            //{
+            //    Amount = (1000),
+            //    Description = "ELibrary Status Upgrade",
+            //    Currency = "usd",
+            //    Customer = customer.Id
+            //});
 
-            if (charge.Status == "succeeded")
-            {
-                _userService.UpgradeStatus(userId);
-            }
+            //if (charge.Status == "succeeded")
+            //{
+            //    _userService.UpgradeStatus(userId);
+            //}
 
-            return RedirectToAction("Status");
+            //return RedirectToAction("Status");
         }
     }
 }

@@ -8,6 +8,7 @@ namespace ELibrary.Domain.DTO
     public class ELibraryUserDto
     {
         public string Id { get; set; }
+        public int IdInt { get; set; }
         public string Email { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
@@ -16,7 +17,8 @@ namespace ELibrary.Domain.DTO
         public ELibraryUserDto() { }
         public ELibraryUserDto(ELibraryUser user)
         {
-            Id = user.Id;
+            Id = user.Id.ToString();
+            IdInt = user.Id;
             Email = user.Email;
             Name = user.Name;
             Surname = user.Surname;

@@ -120,8 +120,8 @@ namespace ELibrary.Service.Implementation
         public async Task Update(Book entity)
         {
             Book previousEntity = await GetWithAuthorsCategoriesPublisher(entity.Id);
-            IEnumerable<int> authorsToAdd = entity.Authors.Select(ba => ba.Id).Where(id => !previousEntity.Authors.Select(ba => ba.Id).Contains(id));
-            IEnumerable<int> categoriesToAdd = entity.Categories.Select(bc => bc.Id).Where(id => !previousEntity.Categories.Select(bc => bc.Id).Contains(id));
+            IEnumerable<int> authorsToAdd = entity.Authors.Where(ba => !previousEntity.Authors.Select(ba => ba.Id).Contains(ba.Id)).Select(ba => ba.AuthorId);
+            IEnumerable<int> categoriesToAdd = entity.Categories.Where(bc => !previousEntity.Categories.Select(bc => bc.Id).Contains(bc.Id)).Select(bc => bc.CategoryId);
             await RemoveAuthors(previousEntity.Authors.Where(ba => !entity.Authors.Select(ba => ba.AuthorId).Contains(ba.AuthorId)));
             await RemoveCategories(previousEntity.Categories.Where(bc => !entity.Categories.Select(bc => bc.CategoryId).Contains(bc.CategoryId)));
             await AddAuthors(entity.Id, authorsToAdd);

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ELibrary.Repository.Interface
 {
-    public interface IRentRepository : IRepository<Rent>
+    public interface ICartRepository
     {
-        Task<IEnumerable<Rent>> GetAll(string userId);
-        Task<IEnumerable<Rent>> GetAllCurrent(string userId);
+        Task<Cart> Get(int id);
+        Task Create(int id);
     }
 }

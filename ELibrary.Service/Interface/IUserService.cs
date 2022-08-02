@@ -4,21 +4,18 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Service.Interface
 {
     public interface IUserService
     {
-        IEnumerable<ELibraryUser> GetAll();
-        ELibraryUser Get(string id);
-        IEnumerable<IdentityRole> GetRoles();
-        void ChangeRoles(ELibraryUserDto dto);
-        ELibraryUserDto GetDto(string id);
-        ELibraryUser GetWithCart(string id);
-        void Insert(ELibraryUser entity);
-        void Update(ELibraryUser entity);
-        void Delete(ELibraryUser entity);
-        void InsertFromDtoAsync(IEnumerable<ExcelUserDataDto> entities);
-        void UpgradeStatus(string userId);
+        Task<ELibraryUser> Get(string id);
+        IEnumerable<ELibraryUser> GetUsers();
+        IEnumerable<ELibraryRole> GetRoles();
+        Task ChangeRole(ELibraryUser user, string currentRole, string futureRole);
+        Task<ELibraryUserDto> GetDto(string id);
+        Task InsertFromDtoAsync(IEnumerable<ExcelUserDataDto> entities);
+        //Task UpgradeStatus(string userId);
     }
 }

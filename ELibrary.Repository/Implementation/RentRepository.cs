@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Repository.Implementation
 {
@@ -19,77 +20,46 @@ namespace ELibrary.Repository.Implementation
             _context = context;
             _entities = context.Set<Rent>();
         }
-        public void Delete(Rent entity)
+        public async Task Delete(Rent entity)
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException("entity");
-            }
-            _entities.Remove(entity);
-            _context.SaveChanges();
+            throw new NotImplementedException();
         }
 
-        public void Delete(Guid? id)
+        public async Task Delete(int id)
         {
-            Rent entity = Get(id);
-            if (entity != null)
-            {
-                Delete(entity);
-            }
+            throw new NotImplementedException();
         }
 
-        public Rent Get(Guid? id)
+        public async Task<Rent> Get(int id)
         {
-            return _entities.Include(i => i.User).Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.Author)
-                .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook).SingleOrDefault(i => i.Id == id);
+            throw new NotImplementedException();
         }
 
-        public Rent Get(string userId, int year, int month)
+        public async Task<IEnumerable<Rent>> GetAll()
         {
-            if (!_entities.Any(i => i.UserId == userId && i.Month == DateTime.Now.Month && i.Year == DateTime.Now.Year))
-            {
-                Insert(new Rent
-                {
-                    Year = DateTime.Now.Year,
-                    Month = DateTime.Now.Month,
-                    UserId = userId
-                });
-            }
-            return _entities.Include(i => i.User).Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.Author)
-                .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook)
-                .SingleOrDefault(i => i.UserId == userId && i.Month == DateTime.Now.Month && i.Year == DateTime.Now.Year);
+            throw new NotImplementedException();
         }
 
-        public IEnumerable<Rent> GetAll()
+        public async Task<IEnumerable<Rent>> GetAll(string userId)
         {
-            return _entities.Include(i => i.User).Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.Author)
-                .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook).AsEnumerable();
+            List<Rent> r = await _entities.FromSqlInterpolated($"SELECT * FROM rent r WHERE r.elibuserid = {int.Parse(userId)}").ToListAsync();
+            return r;
         }
 
-        public IEnumerable<Rent> GetAll(string userId)
+        public async Task<IEnumerable<Rent>> GetAllCurrent(string userId)
         {
-            return _entities.Include(i => i.User).Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.Author)
-                .Include(i => i.BooksInRent).ThenInclude(i => i.Book).ThenInclude(i => i.CategoriesInBook).Where(i => i.UserId == userId).AsEnumerable();
+            List<Rent> r = await _entities.FromSqlInterpolated($"SELECT * FROM rent r WHERE r.elibuserid = {int.Parse(userId)} AND r.subscriptionend >= current_date").ToListAsync();
+            return r;
         }
 
-        public void Insert(Rent entity)
+        public async Task Insert(Rent entity)
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException("entity");
-            }
-            _entities.Add(entity);
-            _context.SaveChanges();
+            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO rent (elibuserid, bookid, subscriptionstart, subscriptionend) VALUES ({entity.UserId}, {entity.BookId}, {entity.Start}, {entity.End})");
         }
 
-        public void Update(Rent entity)
+        public async Task Update(Rent entity)
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException("entity");
-            }
-            _entities.Update(entity);
-            _context.SaveChanges();
+            throw new NotImplementedException();
         }
     }
 }

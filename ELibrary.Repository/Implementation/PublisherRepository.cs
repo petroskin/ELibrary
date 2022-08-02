@@ -54,12 +54,12 @@ namespace ELibrary.Repository.Implementation
 
         public async Task Insert(Publisher entity)
         {
-            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO publisher (\"name\") VALUES ('{entity.Name}')");
+            await _context.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO publisher (\"name\") VALUES ({entity.Name})");
         }
 
         public async Task Update(Publisher entity)
         {
-            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"UPDATE publisher SET \"name\" = '{entity.Name}' WHERE id = {entity.Id}");
+            int affectedCount = await _context.Database.ExecuteSqlInterpolatedAsync($"UPDATE publisher SET \"name\" = {entity.Name} WHERE id = {entity.Id}");
             if (affectedCount == 0)
             {
                 throw new Exception("Entity not found.");

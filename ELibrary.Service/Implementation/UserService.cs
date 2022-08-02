@@ -13,65 +13,64 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Service.Implementation
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
+        private readonly IUserRoleRepository _userRoleRepository;
+        private readonly IRentRepository _rentRepository;
+        private readonly ICartRepository _cartRepository;
         private readonly UserManager<ELibraryUser> _userManager;
+        private readonly RoleManager<ELibraryRole> _roleManager;
         private readonly IRepository<EmailMessage> _emailMessageRepository;
         private readonly EmailSettings _settings;
-        public UserService(IUserRepository userRepository, UserManager<ELibraryUser> userManager, IRepository<EmailMessage> emailMessageRepository, EmailSettings settings)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IUserRoleRepository userRoleRepository, IRentRepository rentRepository, ICartRepository cartRepository, UserManager<ELibraryUser> userManager, RoleManager<ELibraryRole> roleManager, IRepository<EmailMessage> emailMessageRepository, EmailSettings settings)
         {
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
+            _userRoleRepository = userRoleRepository;
+            _rentRepository = rentRepository;
+            _cartRepository = cartRepository;
             _userManager = userManager;
+            _roleManager = roleManager;
             _emailMessageRepository = emailMessageRepository;
             _settings = settings;
         }
 
-        public void ChangeRoles(ELibraryUserDto dto)
+        public async Task ChangeRole(ELibraryUser user, string currentRole, string futureRole)
         {
-            _userRepository.RemoveRoles(dto);
-            _userManager.AddToRoleAsync(_userRepository.Get(dto.Id), dto.Role).Wait();
+            ELibraryRole futureRoleEntity = await _roleManager.FindByNameAsync(futureRole);
+            if (futureRoleEntity == null)
+                throw new Exception("Role does not exist.");
+            await _userRoleRepository.ChangeUserRole(user.Id, futureRoleEntity.Id);
+            await _userManager.RemoveFromRoleAsync(user, currentRole);
+            await _userManager.AddToRoleAsync(user, futureRole);
         }
 
-        public void Delete(ELibraryUser entity)
+        public IEnumerable<ELibraryUser> GetUsers()
         {
-            _userRepository.Delete(entity);
+            return _userManager.Users;
         }
 
-        public ELibraryUser Get(string id)
+        public IEnumerable<ELibraryRole> GetRoles()
         {
-            return _userRepository.Get(id);
+            return _roleManager.Roles;
         }
 
-        public IEnumerable<ELibraryUser> GetAll()
+        public async Task<ELibraryUserDto> GetDto(string id)
         {
-            return _userRepository.GetAll();
+            ELibraryUser user = await _userManager.FindByIdAsync(id);
+            ELibraryUserDto dto = new ELibraryUserDto(user);
+            dto.Role = (await _userManager.GetRolesAsync(user))[0];
+            dto.BooksRented = (await _rentRepository.GetAllCurrent(id)).Count();
+            return dto;
         }
 
-        public ELibraryUserDto GetDto(string id)
-        {
-            return _userRepository.GetDto(id);
-        }
-
-        public IEnumerable<IdentityRole> GetRoles()
-        {
-            return _userRepository.GetRoles();
-        }
-
-        public ELibraryUser GetWithCart(string id)
-        {
-            return _userRepository.GetWithCart(id);
-        }
-
-        public void Insert(ELibraryUser entity)
-        {
-            _userRepository.Insert(entity);
-        }
-
-        public void InsertFromDtoAsync(IEnumerable<ExcelUserDataDto> entities)
+        public async Task InsertFromDtoAsync(IEnumerable<ExcelUserDataDto> entities)
         {
             foreach (ExcelUserDataDto entity in entities)
             {
@@ -85,70 +84,76 @@ namespace ELibrary.Service.Implementation
                     Email = entity.Email,
                     Name = entity.Name,
                     Surname = entity.Surname,
-                    UserCart = new Cart(),
                     EmailConfirmed = true
                 };
-                user.UserCart.UserId = user.Id;
-                _userManager.CreateAsync(user, entity.Password).Wait();
-                if (entity.Role != "Admin" && entity.Role != "Premium")
-                {
-                    entity.Role = "Standard";
-                }
-                _userManager.AddToRoleAsync(user, entity.Role).Wait();
+                ELibraryRole role = await _roleManager.FindByNameAsync(entity.Role);
+                if (role == null) 
+                    continue;
+                await _userManager.CreateAsync(user, entity.Password);
+                await _userManager.AddToRoleAsync(user, entity.Role);
+                await _cartRepository.Create((await _userRepository.GetLatest()).Id);
             }
         }
 
-        public void UpgradeStatus(string userId)
+        public async Task<ELibraryUser> Get(string id)
         {
-            ELibraryUserDto dto = this.GetDto(userId);
-            if (dto.Role == "Admin")
-                return;
-            _userRepository.RemoveRoles(dto);
-            _userManager.AddToRoleAsync(_userRepository.Get(dto.Id), "Premium").Wait();
-
-            EmailMessage emailMessage = new EmailMessage();
-            emailMessage.MailTo = dto.Email;
-            emailMessage.Subject = "Successfully upgraded status!";
-            emailMessage.Status = false;
-            emailMessage.Content = "Congratulations, you have successfully upgraded your user status to premium for the user " + dto.Name + " " + dto.Surname;
-
-            _emailMessageRepository.Insert(emailMessage);
-
-            var mimeMessage = new MimeMessage
+            ELibraryUser user = await _userManager.FindByIdAsync(id);
+            user.Roles = await _userRoleRepository.GetForUser(user.Id);
+            foreach(UserRole role in user.Roles)
             {
-                Sender = new MailboxAddress(_settings.SenderName, _settings.SmtpUsername),
-                Subject = emailMessage.Subject
-            };
-            mimeMessage.From.Add(new MailboxAddress(_settings.EmailDisplayName, _settings.SmtpUsername));
-            mimeMessage.Body = new TextPart(TextFormat.Plain) { Text = emailMessage.Content };
-            mimeMessage.To.Add(new MailboxAddress(emailMessage.MailTo));
-
-            try
-            {
-                using (var smtp = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    var socketOption = _settings.EmableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
-                    smtp.Connect(_settings.SmtpServer, _settings.SmtpServerPort, socketOption);
-
-                    if (!string.IsNullOrEmpty(_settings.SmtpUsername))
-                    {
-                        smtp.Authenticate(_settings.SmtpUsername, _settings.SmtpPassword);
-                    }
-
-                    smtp.Send(mimeMessage);
-
-                    smtp.Disconnect(true);
-                }
+                role.Role = await _roleRepository.Get(role.RoleId);
             }
-            catch (SmtpException e)
-            {
-                throw e;
-            }
+            return user;
         }
+        /*
+* If everything works, delete this
+* 
+public async Task UpgradeStatus(string userId)
+{
+   ELibraryUserDto dto = this.GetDto(userId);
+   if (dto.Role == "Admin")
+       return;
+   _userRepository.RemoveRoles(dto);
+   _userManager.AddToRoleAsync(_userRepository.Get(dto.Id), "Premium").Wait();
 
-        public void Update(ELibraryUser entity)
-        {
-            _userRepository.Update(entity);
-        }
+   EmailMessage emailMessage = new EmailMessage();
+   emailMessage.MailTo = dto.Email;
+   emailMessage.Subject = "Successfully upgraded status!";
+   emailMessage.Status = false;
+   emailMessage.Content = "Congratulations, you have successfully upgraded your user status to premium for the user " + dto.Name + " " + dto.Surname;
+
+   _emailMessageRepository.Insert(emailMessage);
+
+   var mimeMessage = new MimeMessage
+   {
+       Sender = new MailboxAddress(_settings.SenderName, _settings.SmtpUsername),
+       Subject = emailMessage.Subject
+   };
+   mimeMessage.From.Add(new MailboxAddress(_settings.EmailDisplayName, _settings.SmtpUsername));
+   mimeMessage.Body = new TextPart(TextFormat.Plain) { Text = emailMessage.Content };
+   mimeMessage.To.Add(new MailboxAddress(emailMessage.MailTo));
+
+   try
+   {
+       using (var smtp = new MailKit.Net.Smtp.SmtpClient())
+       {
+           var socketOption = _settings.EmableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
+           smtp.Connect(_settings.SmtpServer, _settings.SmtpServerPort, socketOption);
+
+           if (!string.IsNullOrEmpty(_settings.SmtpUsername))
+           {
+               smtp.Authenticate(_settings.SmtpUsername, _settings.SmtpPassword);
+           }
+
+           smtp.Send(mimeMessage);
+
+           smtp.Disconnect(true);
+       }
+   }
+   catch (SmtpException e)
+   {
+       throw e;
+   }
+}*/
     }
 }

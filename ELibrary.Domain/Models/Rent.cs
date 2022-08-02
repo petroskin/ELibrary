@@ -21,7 +21,7 @@ namespace ELibrary.Domain.Models
         public DateTime End { get; set; }
         public string GetDateFormat()
         {
-            return $"{Start:MMMM yyyy} - {End:MMMM yyyy}";
+            return $"{Start:dd MMMM yyyy} - {End:dd MMMM yyyy}";
         }
         public Rent()
         {

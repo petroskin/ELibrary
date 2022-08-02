@@ -2,14 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ELibrary.Service.Interface
 {
     public interface ICartService
     {
-        void AddToCart(string userId, Guid bookId);
-        void RemoveFromCart(string userId, Guid Id);
-        void ClearCart(string userId);
-        Cart getCart(string userId);
+        Task AddToCart(string userId, int bookId);
+        Task RemoveFromCart(int id);
+        Task<Cart> getCart(string userId);
     }
 }

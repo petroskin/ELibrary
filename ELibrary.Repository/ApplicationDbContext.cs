@@ -29,7 +29,7 @@ namespace ELibrary.Repository
         public virtual DbSet<Cart> Carts { get; set; }
         public virtual DbSet<BooksInCart> BooksInCarts { get; set; }
         public virtual DbSet<Rent> Rents { get; set; }
-        public virtual DbSet<BooksInRent> BooksInRents { get; set; }
+        public virtual DbSet<Review> Reviews { get; set; }
         public virtual DbSet<EmailMessage> EmailMessages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -69,32 +69,66 @@ namespace ELibrary.Repository
                 .WithMany(b => b.Categories)
                 .HasForeignKey(cb => cb.BookId);
 
-            // previous
+            builder.Entity<BooksInCart>()
+                .HasOne(i => i.Cart)
+                .WithMany(i => i.BooksInCart)
+                .HasForeignKey(i => i.CartId);
 
-            //builder.Entity<BooksInCart>()
-            //    .HasOne(i => i.Cart)
-            //    .WithMany(i => i.BooksInCart)
-            //    .HasForeignKey(i => i.CartId);
+            builder.Entity<BooksInCart>()
+                .HasOne(i => i.Book)
+                .WithMany()
+                .HasForeignKey(i => i.BookId);
 
-            //builder.Entity<BooksInCart>()
-            //    .HasOne(i => i.Book)
-            //    .WithMany()
-            //    .HasForeignKey(i => i.BookId);
+            builder.Entity<Rent>()
+                .HasOne(i => i.Book)
+                .WithMany()
+                .HasForeignKey(i => i.BookId);
 
-            //builder.Entity<BooksInRent>()
-            //    .HasOne(i => i.Rent)
-            //    .WithMany(i => i.BooksInRent)
-            //    .HasForeignKey(i => i.RentId);
+            builder.Entity<Rent>()
+                .HasOne(i => i.User)
+                .WithMany(i => i.Rents)
+                .HasForeignKey(i => i.UserId);
 
-            //builder.Entity<BooksInRent>()
-            //    .HasOne(i => i.Book)
-            //    .WithMany()
-            //    .HasForeignKey(i => i.BookId);
+            builder.Entity<Review>()
+                .HasOne(i => i.Book)
+                .WithMany(i => i.Reviews)
+                .HasForeignKey(i => i.BookId);
 
-            //builder.Entity<Rent>()
-            //    .HasOne(i => i.User)
-            //    .WithMany(i => i.Rents)
-            //    .HasForeignKey(i => i.UserId);
+            builder.Entity<Review>()
+                .HasOne(i => i.User)
+                .WithMany(i => i.Reviews)
+                .HasForeignKey(i => i.UserId);
+
+            builder.Entity<UserRole>()
+                .HasOne(i => i.User)
+                .WithMany(i => i.Roles)
+                .HasForeignKey(i => i.UserId);
+
+            builder.Entity<UserRole>()
+                .HasOne(i => i.Role)
+                .WithMany(i => i.Users)
+                .HasForeignKey(i => i.RoleId);
+
+            builder.Entity<ELibraryUser>()
+                .ToTable(name: "elibuser");
+
+            builder.Entity<ELibraryRole>()
+                .ToTable(name: "elibrole");
+
+            builder.Entity<CurrentUserRole>()
+                .ToTable(name: "currentuserrole");
+
+            builder.Entity<RoleClaim>()
+                .ToTable(name: "roleclaim");
+
+            builder.Entity<UserClaim>()
+                .ToTable(name: "userclaim");
+
+            builder.Entity<UserLogin>()
+                .ToTable(name: "userlogin");
+
+            builder.Entity<UserToken>()
+                .ToTable(name: "usertoken");
         }
     }
 }

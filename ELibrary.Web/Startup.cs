@@ -48,8 +48,12 @@ namespace ELibrary.Web
             services.AddScoped(typeof(IBookRepository), typeof(BookRepository));
             services.AddScoped(typeof(IBookAuthorRepository), typeof(BookAuthorRepository));
             services.AddScoped(typeof(IBookCategoriesRepository), typeof(BookCategoriesRepository));
+            services.AddScoped(typeof(ICartRepository), typeof(CartRepository));
+            services.AddScoped(typeof(IBookCartRepository), typeof(BookCartRepository));
             services.AddScoped(typeof(IRentRepository), typeof(RentRepository));
+            services.AddScoped(typeof(IUserRoleRepository), typeof(UserRoleRepository));
             services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+            services.AddScoped(typeof(IRoleRepository), typeof(RoleRepository));
 
             services.AddScoped<EmailSettings>(es => emailSettings);
 

@@ -17,59 +17,48 @@ namespace ELibrary.Web.Controllers
     public class RentController : Controller
     {
         private readonly IRentService _rentService;
-        public RentController(IRentService rentService)
+        private readonly IUserService _userService;
+        public RentController(IRentService rentService, IUserService userService)
         {
             _rentService = rentService;
+            _userService = userService;
             ComponentInfo.SetLicense("FREE-LIMITED-KEY");
         }
         // GET: Rent
-        public IActionResult Index(Guid? id)
+        public async Task<IActionResult> Index()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Rent model;
-            if (id.HasValue)
-            {
-                model = _rentService.Get(id.Value);
-            }
-            else
-            {
-                model = _rentService.Get(userId, DateTime.Now.Year, DateTime.Now.Month);
-            }
+            IEnumerable<Rent> model;
+            model = await _rentService.GetCurrentRentsByUser(userId);
             return View(model);
         }
         // GET: Rent/AllRents
-        public IActionResult AllRents()
+        public async Task<IActionResult> AllRents()
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            IEnumerable<Rent> model = _rentService.GetAll(userId).Where(i => i.BooksInRent.Count() > 0);
+            IEnumerable<Rent> model = await _rentService.GetAll(userId);
             return View(model);
         }
         // GET: Rent/Export/5
-        public FileContentResult Export(Guid? id)
+        public async Task<FileContentResult> Export()
         {
-            if (!id.HasValue)
-            {
-                return null;
-            }
-            Rent rent = _rentService.Get(id.Value);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            IEnumerable<Rent> rents = await _rentService.GetCurrentRentsByUser(userId);
 
             var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Invoice.docx");
             var document = DocumentModel.Load(templatePath);
 
             StringBuilder sb = new StringBuilder();
 
-            // done this far
-
-            foreach (var item in rent.BooksInRent.Select(i => i.Book))
+            foreach (var item in rents.Select(i => i.Book))
             {
-                sb.AppendLine(item.Author.FullName() + " - \"" + item.Name + "\"");
+                sb.AppendLine(string.Join(", ", item.Authors.Select(a => a.Author.FullName())) + " - \"" + item.Name + "\"");
             }
 
-            document.Content.Replace("{{RentNumber}}", rent.Id.ToString());
-            document.Content.Replace("{{UserName}}", rent.User.UserName);
-            document.Content.Replace("{{NumberBooks}}", rent.BooksInRent.Count().ToString());
+            document.Content.Replace("{{UserName}}", (await _userService.GetDto(userId)).Email);
+            document.Content.Replace("{{NumberBooks}}", rents.Count().ToString());
             document.Content.Replace("{{Books}}", sb.ToString());
-            document.Content.Replace("{{Month}}", rent.GetDateFormat());
+            document.Content.Replace("{{Date}}", DateTime.Now.ToString("dd MMMM yyyy"));
 
             var stream = new MemoryStream();
 
