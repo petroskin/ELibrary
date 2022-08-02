@@ -11,11 +11,13 @@ namespace ELibrary.Domain.DTO
         public string Role { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
-        public ExcelUserDataDto(string email, string password, string role)
+        public ExcelUserDataDto(string email, string password, string role, string name = null, string surname = null)
         {
             Email = email;
             Password = password;
             Role = role;
+            Name = name;
+            Surname = surname;
         }
         public ExcelUserDataDto() { }
     }

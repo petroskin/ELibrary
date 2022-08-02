@@ -23,12 +23,10 @@ namespace ELibrary.Domain.Models
             AuthorId = authorId;
             BookId = bookId;
         }
-        public BookAuthor(Author author, Book book)
+        public BookAuthor(Author author, Book book) : this(author.Id, book.Id)
         {
             Author = author;
-            AuthorId = author.Id;
             Book = book;
-            BookId = book.Id;
         }
     }
 }

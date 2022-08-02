@@ -20,12 +20,10 @@ namespace ELibrary.Domain.Models
             BookId = bookId;
             CategoryId = categoryId;
         }
-        public CategoriesInBook(Book book, Category category)
+        public CategoriesInBook(Book book, Category category) : this(book.Id, category.Id)
         {
             Book = book;
-            BookId = book.Id;
             Category = category;
-            CategoryId = category.Id;
         }
     }
 }

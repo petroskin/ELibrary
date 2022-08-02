@@ -22,10 +22,17 @@ namespace ELibrary.Domain.Identity
         [Column("datestart")]
         public DateTime DateStart { get; set; }
         [Column("dateend")]
-        public DateTime DateEnd { get; set; }
+        public DateTime? DateEnd { get; set; }
         public UserRole()
         {
 
+        }
+        public UserRole(int userId, int roleId)
+        {
+            UserId = userId;
+            RoleId = roleId;
+            DateStart = DateTime.Now;
+            DateEnd = null;
         }
         public UserRole(int userId, int roleId, DateTime dateStart, DateTime dateEnd)
         {

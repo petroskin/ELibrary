@@ -65,8 +65,6 @@ namespace ELibrary.Domain.Identity
             Roles = new List<UserRole>();
         }
 
-        // IPasswordHasher<TUser> PasswordHasher - USE THIS THROUGH DEPENDENCY INJECTION
-
         //public virtual Cart UserCart { get; set; }
         //public IEnumerable<Rent> Rents { get; set; }
     }

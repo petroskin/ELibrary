@@ -6,8 +6,8 @@ using System.Text;
 
 namespace ELibrary.Domain.Models
 {
-    [Table("rent", Schema = "elibrary")]
-    public class Rent : BaseEntity
+    [Table("review", Schema = "elibrary")]
+    public class Review : BaseEntity
     {
         [Column("elibuserid")]
         public int UserId { get; set; }
@@ -15,26 +15,22 @@ namespace ELibrary.Domain.Models
         [Column("bookid")]
         public int BookId { get; set; }
         public Book Book { get; set; }
-        [Column("subscriptionstart")]
-        public DateTime Start { get; set; }
-        [Column("subscriptionend")]
-        public DateTime End { get; set; }
-        public string GetDateFormat()
-        {
-            return $"{Start:MMMM yyyy} - {End:MMMM yyyy}";
-        }
-        public Rent()
+        [Column("rating")]
+        public int Rating { get; set; }
+        [Column("comment")]
+        public string Comment { get; set; }
+        public Review()
         {
 
         }
-        public Rent(int userId, int bookId)
+        public Review(int userId, int bookId, int rating, string comment)
         {
             UserId = userId;
             BookId = bookId;
-            Start = DateTime.Now;
-            End = DateTime.Now.AddDays(30);
+            Rating = rating;
+            Comment = comment;
         }
-        public Rent(ELibraryUser user, Book book) : this(user.Id, book.Id)
+        public Review(ELibraryUser user, Book book, int rating, string comment) : this(user.Id, book.Id, rating, comment)
         {
             User = user;
             Book = book;
