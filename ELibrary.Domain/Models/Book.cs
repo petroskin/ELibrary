@@ -24,35 +24,25 @@ namespace ELibrary.Domain.Models
         public int TotalRents { get; set; }
         [Column("avgrating")]
         public decimal AvgRating { get; set; }
+        public IEnumerable<Review> Reviews { get; set; }
         public Book()
         {
             Categories = new List<CategoriesInBook>();
             Authors = new List<BookAuthor>();
             TotalRents = 0;
             AvgRating = 0;
+            Reviews = new List<Review>();
         }
-        public Book(string name, string description, string imageLink, int publisherId)
+        public Book(string name, string description, string imageLink, int publisherId) : this()
         {
             Name = name;
             Description = description;
             ImageLink = imageLink;
-            Categories = new List<CategoriesInBook>();
-            Authors = new List<BookAuthor>();
             PublisherId = publisherId;
-            TotalRents = 0;
-            AvgRating = 0;
         }
-        public Book(string name, string description, string imageLink, Publisher publisher)
+        public Book(string name, string description, string imageLink, Publisher publisher) : this(name, description, imageLink, publisher.Id)
         {
-            Name = name;
-            Description = description;
-            ImageLink = imageLink;
-            Categories = new List<CategoriesInBook>();
-            Authors = new List<BookAuthor>();
             Publisher = publisher;
-            PublisherId = publisher.Id;
-            TotalRents = 0;
-            AvgRating = 0;
         }
     }
 }

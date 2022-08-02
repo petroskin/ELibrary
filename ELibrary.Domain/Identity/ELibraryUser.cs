@@ -26,6 +26,9 @@ namespace ELibrary.Domain.Identity
         [Column("password")]
         public override string PasswordHash { get => base.PasswordHash; set => base.PasswordHash = value; }
         public IEnumerable<UserRole> Roles { get; set; }
+        public Cart UserCart { get; set; }
+        public IEnumerable<Rent> Rents { get; set; }
+        public IEnumerable<Review> Reviews { get; set; }
 
         [Column("lockoutend")]
         public override DateTimeOffset? LockoutEnd { get => base.LockoutEnd; set => base.LockoutEnd = value; }
@@ -55,6 +58,8 @@ namespace ELibrary.Domain.Identity
         public ELibraryUser() : base()
         {
             Roles = new List<UserRole>();
+            Rents = new List<Rent>();
+            Reviews = new List<Review>();
         }
 
         public ELibraryUser(string name, string surname, string email) : base(email)
@@ -63,9 +68,8 @@ namespace ELibrary.Domain.Identity
             Name = name;
             Surname = surname;
             Roles = new List<UserRole>();
+            Rents = new List<Rent>();
+            Reviews = new List<Review>();
         }
-
-        //public virtual Cart UserCart { get; set; }
-        //public IEnumerable<Rent> Rents { get; set; }
     }
 }

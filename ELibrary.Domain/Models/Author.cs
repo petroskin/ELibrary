@@ -21,13 +21,12 @@ namespace ELibrary.Domain.Models
         {
             Books = new List<BookAuthor>();
         }
-        public Author(string name, string surname, string country, string imageLink)
+        public Author(string name, string surname, string country, string imageLink) : this()
         {
             Name = name;
             Surname = surname;
             Country = country;
             ImageLink = imageLink;
-            Books = new List<BookAuthor>();
         }
         public string FullName()
         {

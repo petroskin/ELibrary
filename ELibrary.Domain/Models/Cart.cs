@@ -17,10 +17,9 @@ namespace ELibrary.Domain.Models
         {
             BooksInCart = new List<BooksInCart>();
         }
-        public Cart(int userId)
+        public Cart(int userId) : this()
         {
             UserId = userId;
-            BooksInCart = new List<BooksInCart>();
         }
     }
 }

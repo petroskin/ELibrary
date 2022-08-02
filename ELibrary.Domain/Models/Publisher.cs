@@ -15,10 +15,9 @@ namespace ELibrary.Domain.Models
         {
             Books = new List<Book>();
         }
-        public Publisher(string name)
+        public Publisher(string name) : this()
         {
             Name = name;
-            Books = new List<Book>();
         }
     }
 }

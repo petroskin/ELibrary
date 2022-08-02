@@ -15,10 +15,9 @@ namespace ELibrary.Domain.Models
         {
             Books = new List<CategoriesInBook>();
         }
-        public Category(string name)
+        public Category(string name) : this()
         {
             Name = name;
-            Books = new List<CategoriesInBook>();
         }
     }
 }
