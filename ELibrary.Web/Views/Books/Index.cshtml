@@ -50,6 +50,12 @@
                 <div class="card-body">
                     <h5 class="card-title">@book.Name</h5>
                     <p class="card-text">@string.Join(", ", book.Categories.Select(b => b.Category.Name))</p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Average rating: @book.AvgRating.ToString("N2") / 5</li>
+                    <li class="list-group-item">Total rents: @book.TotalRents.ToString()</li>
+                </ul>
+                <div class="card-body">
                     <a asp-action="Details" asp-route-id="@book.Id" class="btn btn-info">Details</a>
                     <form asp-action="AddToCart" asp-route-id="@book.Id">
                         <input type="submit" value="Add To Cart" class="btn btn-primary" />
