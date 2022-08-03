@@ -4,6 +4,7 @@ using ELibrary.Service.Interface;
 using ExcelDataReader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using System;
@@ -18,9 +19,11 @@ namespace ELibrary.Web.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly RoleManager<ELibraryRole> _roleManager;
+        public UserController(IUserService userService, RoleManager<ELibraryRole> roleManager)
         {
             _userService = userService;
+            _roleManager = roleManager;
         }
         // GET: User
         [Authorize(Roles = "Admin")]
@@ -122,36 +125,18 @@ namespace ELibrary.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userDto = await _userService.GetDto(userId);
             ViewData["UserRole"] = userDto.Role;
-            return View();
+            ViewData["Roles"] = _roleManager.Roles;
+            return View(_roleManager.Roles);
         }
-
-        public async Task<IActionResult> UpgradeStatus(string stripeEmail, string stripeToken)
+        [HttpPost]
+        public async Task<IActionResult> UpgradeStatus(string Role)
         {
-            throw new NotImplementedException();
-            //var customerService = new CustomerService();
-            //var chargeService = new ChargeService();
-            //string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userDto = await _userService.GetDto(userId);
+            var user = await _userService.Get(userId);
+            await _userService.ChangeRole(user, userDto.Role, Role);
 
-            //var customer = customerService.Create(new CustomerCreateOptions
-            //{
-            //    Email = stripeEmail,
-            //    Source = stripeToken
-            //});
-
-            //var charge = chargeService.Create(new ChargeCreateOptions
-            //{
-            //    Amount = (1000),
-            //    Description = "ELibrary Status Upgrade",
-            //    Currency = "usd",
-            //    Customer = customer.Id
-            //});
-
-            //if (charge.Status == "succeeded")
-            //{
-            //    _userService.UpgradeStatus(userId);
-            //}
-
-            //return RedirectToAction("Status");
+            return RedirectToAction("Status");
         }
     }
 }
