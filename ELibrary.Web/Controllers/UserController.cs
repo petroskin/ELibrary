@@ -68,7 +68,7 @@ namespace ELibrary.Web.Controllers
             //      Import each user in a separate row.                                 //
             //      The first field is email                                            //
             //      The second field is password                                        //
-            //      The third field is role (Admin / Premium / Standard)                //
+            //      The third field is role (Free / Regular / Premium / Gold / Admin)   //
             //      The fourth and fifth are name and surname, and are optional         //
             //                                                                          //
             //////////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ namespace ELibrary.Web.Controllers
                 }
             }
 
-            _userService.InsertFromDtoAsync(users);
+            await _userService.InsertFromDtoAsync(users);
 
             return RedirectToAction(nameof(Index));
         }

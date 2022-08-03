@@ -90,8 +90,10 @@ namespace ELibrary.Service.Implementation
                 if (role == null) 
                     continue;
                 await _userManager.CreateAsync(user, entity.Password);
+                int newUserId = (await _userRepository.GetLatest()).Id;
+                await _cartRepository.Create(newUserId);
+                await _userRoleRepository.ChangeUserRole(newUserId, (await _roleManager.FindByNameAsync(entity.Role)).Id);
                 await _userManager.AddToRoleAsync(user, entity.Role);
-                await _cartRepository.Create((await _userRepository.GetLatest()).Id);
             }
         }
 

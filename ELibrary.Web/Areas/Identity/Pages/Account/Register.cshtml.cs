@@ -24,6 +24,7 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
     {
         private readonly ICartRepository _cartRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IUserRoleRepository _userRoleRepository;
         private readonly SignInManager<ELibraryUser> _signInManager;
         private readonly UserManager<ELibraryUser> _userManager;
         private readonly RoleManager<ELibraryRole> _roleManager;
@@ -33,6 +34,7 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
         public RegisterModel(
             ICartRepository cartRepository,
             IUserRepository userRepository,
+            IUserRoleRepository userRoleRepository,
             UserManager<ELibraryUser> userManager,
             RoleManager<ELibraryRole> roleManager,
             SignInManager<ELibraryUser> signInManager,
@@ -41,6 +43,7 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
         {
             _cartRepository = cartRepository;
             _userRepository = userRepository;
+            _userRoleRepository = userRoleRepository;
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
@@ -104,8 +107,10 @@ namespace ELibrary.Web.Areas.Identity.Pages.Account
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
-                    await _cartRepository.Create((await _userRepository.GetLatest()).Id);
+                    int newUserId = (await _userRepository.GetLatest()).Id;
+                    await _cartRepository.Create(newUserId);
                     _logger.LogInformation("User created a new account with password.");
+                    await _userRoleRepository.ChangeUserRole(newUserId, (await _roleManager.FindByNameAsync("Free")).Id);
                     await _userManager.AddToRoleAsync(user, "Free");
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
