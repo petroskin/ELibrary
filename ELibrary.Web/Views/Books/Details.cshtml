@@ -68,6 +68,10 @@
     {
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a> <span>|</span>
     }
+    @if ((bool)ViewData["Reviewable"] || User.IsInRole("Admin"))
+    {
+        <a asp-controller="Reviews" asp-action="Create" asp-route-bookid="@Model.Id" class="btn btn-light">Add Review</a> <span>|</span>
+    }
     @if (User.Identity.IsAuthenticated)
     {
         <form asp-action="AddToCart" asp-route-id="@Model.Id">
@@ -75,4 +79,23 @@
         </form>
     }
     <a asp-action="Index">Back to List</a>
+</div>
+<div>
+    @foreach (Review review in Model.Reviews)
+    {
+        <hr />
+        <div class="py-4">
+            <h5>@($"{review.User.Name} {review.User.Surname}")</h5>
+            <p style="color: dimgrey">Rating: @review.Rating / 5</p>
+            <p>@review.Comment</p>
+            @if (review.UserId == (int)ViewData["UserId"])
+            {
+                <a asp-controller="Reviews" asp-action="Edit" asp-route-id="@review.Id" method="get" class="btn btn-warning">Edit</a>
+            }
+            @if (review.UserId == (int)ViewData["UserId"] || User.IsInRole("Admin"))
+            {
+                <a asp-controller="Reviews" asp-action="Delete" asp-route-id="@review.Id" method="get" class="btn btn-danger">Delete</a>
+            }
+        </div>
+    }
 </div>

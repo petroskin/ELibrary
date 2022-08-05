@@ -54,6 +54,7 @@ namespace ELibrary.Web
             services.AddScoped(typeof(IUserRoleRepository), typeof(UserRoleRepository));
             services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
             services.AddScoped(typeof(IRoleRepository), typeof(RoleRepository));
+            services.AddScoped(typeof(IReviewRepository), typeof(ReviewRepository));
 
             services.AddScoped<EmailSettings>(es => emailSettings);
 
@@ -66,6 +67,7 @@ namespace ELibrary.Web
             services.AddTransient<ICartService, Service.Implementation.CartService>();
             services.AddTransient<IRentService, Service.Implementation.RentService>();
             services.AddTransient<IUserService, Service.Implementation.UserService>();
+            services.AddTransient<IReviewService, Service.Implementation.ReviewService>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();

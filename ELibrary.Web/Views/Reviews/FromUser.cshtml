@@ -1,0 +1,22 @@
+﻿@model IEnumerable<ELibrary.Domain.Models.Review>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Reviews by @ViewData["UserName"].ToString()</h2>
+
+@foreach (Review review in Model)
+{
+    <hr />
+    <div class="py-4">
+        <h5>@($"Review on \"{review.Book.Name}\"")</h5>
+        <p style="color: dimgrey">Rating: @review.Rating / 5</p>
+        <p>@review.Comment</p>
+        @if ((bool)ViewData["MyReviews"])
+        {
+            <a asp-controller="Reviews" asp-action="Edit" asp-route-id="@review.Id" method="get" class="btn btn-warning">Edit</a>
+            <a asp-controller="Reviews" asp-action="Delete" asp-route-id="@review.Id" method="get" class="btn btn-danger">Delete</a>
+        }
+    </div>
+}

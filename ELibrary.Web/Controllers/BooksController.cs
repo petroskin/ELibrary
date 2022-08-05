@@ -25,7 +25,17 @@ namespace ELibrary.Web.Controllers
         private readonly ICategoryService _categoryService;
         private readonly IUserService _userService;
         private readonly ICartService _cartService;
-        public BooksController(IAuthorService authorService, IBookService bookService, IPublisherService publisherService, ICategoryService categoryService, IUserService userService, ICartService cartService)
+        private readonly IReviewService _reviewService;
+        private readonly IRentService _rentService;
+        public BooksController(
+            IAuthorService authorService, 
+            IBookService bookService, 
+            IPublisherService publisherService, 
+            ICategoryService categoryService, 
+            IUserService userService, 
+            ICartService cartService, 
+            IReviewService reviewService,
+            IRentService rentService)
         {
             _authorService = authorService;
             _bookService = bookService;
@@ -33,6 +43,8 @@ namespace ELibrary.Web.Controllers
             _categoryService = categoryService;
             _userService = userService;
             _cartService = cartService;
+            _reviewService = reviewService;
+            _rentService = rentService;
         }
 
         // GET: Books
@@ -78,12 +90,23 @@ namespace ELibrary.Web.Controllers
                 return NotFound();
             }
             ViewData["BooksLeft"] = "";
+            ViewData["UserId"] = 0;
+            ViewData["Reviewable"] = false;
             if (User.Identity.IsAuthenticated)
             {
                 string booksLeft = "Number of books you can rent this month: ";
-                booksLeft += CalculateBooksLeft(await _userService.GetDto(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+                string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                booksLeft += CalculateBooksLeft(await _userService.GetDto(userId));
                 ViewData["BooksLeft"] = booksLeft;
+                ViewData["UserId"] = int.Parse(userId);
+                if ((await _rentService.GetAll(userId)).Any(rent => rent.BookId == id))
+                {
+                    ViewData["Reviewable"] = true;
+                }
             }
+
+            book.Reviews = await _reviewService.GetAllByBook(book.Id);
+
             return View(book);
         }
 
